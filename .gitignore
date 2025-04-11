@@ -1,0 +1,55 @@
+# Python and Poetry specifics
+__pycache__/
+*.pyc
+*.pyo
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+/lib/
+/lib64/
+wheels/
+*.egg-info
+*.egg
+
+# Poetry
+poetry.lock
+.venv/  # If you create a virtual environment outside of Poetry's management
+venv/    #  or if your IDE creates a venv
+
+# Flask specifics (optional, but often helpful)
+instance/
+logs/
+*.log
+
+# OS and Editor/IDE
+.DS_Store
+Thumbs.db
+*.swp
+*~
+temp/
+tmp/
+*.tmproj
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Byte-compiled files
+*.pyc
+*.pyo
+
+# Distribution files
+dist/
+build/
+*.egg
+*.whl
+
+# PyInstaller
+build
+dist
+
+# Unit test reports
+reports/
