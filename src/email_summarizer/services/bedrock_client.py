@@ -2,7 +2,6 @@ from typing import Any
 
 import os
 import boto3
-import json
 
 
 class BedrockClient():
@@ -25,21 +24,8 @@ class BedrockClient():
     )
     self.deepseek_inference_profile = deepseek_inference_profile
 
-  def invoke_deepseek(self, prompt: str, temperature: float = 0.7, max_tokens: int = 500):
-    # Request body
-    body = json.dumps({
-        "prompt": prompt,
-        "temperature": temperature,
-        "max_tokens": max_tokens
-    })
-    # Send request
-    response = self.boto3_client.invoke_model(
-      modelId=self.deepseek_inference_profile,
-      body=body
-    )
-    # Read response
-    return json.loads(response['body'].read())
-    
+  def invoke_model(self, **kwargs):
+    return self.boto3_client.invoke_model(**kwargs)
 
 
 class BedrockClientFactory:

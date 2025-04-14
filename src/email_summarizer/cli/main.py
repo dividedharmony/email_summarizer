@@ -1,12 +1,14 @@
 from dotenv import load_dotenv
 from email_summarizer.services.bedrock_client import BedrockClientFactory
+from email_summarizer.services.deepseek_client import DeepseekClientFactory
 
 load_dotenv()
 
 def main():
-  client = BedrockClientFactory().get_client()
-  prompt = "Write a short story about a cat."
-  response = client.invoke_deepseek(prompt=prompt)
+  bedrock_client = BedrockClientFactory().get_client()
+  deepseek_client = DeepseekClientFactory().get_client(bedrock_client=bedrock_client)
+  prompt = "Give me five common American male names"
+  response = deepseek_client.invoke(prompt=prompt)
 
   # Print the output
   print(response)
