@@ -56,3 +56,6 @@ reports/
 
 # Env vars
 .env
+
+# Google Secrets
+client_secret.json
