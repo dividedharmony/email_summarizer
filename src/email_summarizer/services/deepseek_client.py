@@ -19,6 +19,8 @@ class DeepseekClientFactory:
     if self.deepseek_client is None:
       self.deepseek_client = DeepseekClient(
         bedrock_client=bedrock_client,
-        model_id=os.environ.get("DEEPSEEK_INFERENCE_PROFILE")
+        model_id=os.environ.get("DEEPSEEK_INFERENCE_PROFILE"),
+        temperature=0.7,
+        max_tokens=700
       )
     return self.deepseek_client
