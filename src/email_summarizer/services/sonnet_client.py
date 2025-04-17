@@ -41,9 +41,9 @@ class BedrockReasoningClient:
             default_model_id: Default Claude model ID to use
         """
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.region_name = region_name or os.getenv("AWS_REGION")
-        self.profile_name = profile_name or "data_reply"
-        self.default_model_id = default_model_id or os.getenv("SONNET_MODEL_ID")
+        self.region_name: str = region_name or os.environ["AWS_REGION"]
+        self.profile_name: str = profile_name or "data_reply"
+        self.default_model_id: str = default_model_id or os.environ["SONNET_MODEL_ID"]
         self.client = self._create_client()
     
     def _create_client(self) -> Any:
@@ -145,7 +145,7 @@ class BedrockReasoningClient:
             self.logger.error(f"Unknown error during model invocation: {e}")
             raise
     
-    def get_model_info(self, model_id: Optional[str] = None) -> Dict[str, Any]:
+    def get_model_info(self, target_model_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Get information about the currently configured model.
         
@@ -155,7 +155,7 @@ class BedrockReasoningClient:
         Returns:
             Dictionary with model information
         """
-        model_id = model_id or self.default_model_id
+        model_id: str = target_model_id or self.default_model_id
         return {
             "model_id": model_id,
             "region": self.region_name,
