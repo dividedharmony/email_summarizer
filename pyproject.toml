@@ -10,12 +10,15 @@ requires-python = ">=3.12"
 dependencies = [
     "flask (>=3.1.0,<4.0.0)",
     "python-dotenv (>=1.1.0,<2.0.0)",
-    "boto3 (>=1.37.33,<2.0.0)"
+    "boto3 (>=1.37.33,<2.0.0)",
 ]
 
 [tool.poetry]
 packages = [{include = "email_summarizer", from = "src"}]
 
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^7.2.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
