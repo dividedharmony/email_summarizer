@@ -5,9 +5,9 @@ import os.path
 from dotenv import load_dotenv
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore
+from googleapiclient.discovery import build  # type: ignore
+from googleapiclient.errors import HttpError  # type: ignore
 
 load_dotenv()
 
@@ -53,7 +53,8 @@ def authenticate_gmail():
                 return None
 
             print(
-                f"No valid credentials found or refresh failed. Starting authentication flow using {CLIENT_SECRET_FILE}..."
+                f"No valid credentials found or refresh failed. \
+                    Starting authentication flow using {CLIENT_SECRET_FILE}..."
             )
             flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
             # Note: port=0 finds a random free port
