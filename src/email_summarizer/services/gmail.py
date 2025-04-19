@@ -10,6 +10,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore
 from googleapiclient.discovery import build  # type: ignore
 from googleapiclient.errors import HttpError  # type: ignore
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -23,6 +24,19 @@ TOKEN_FILE = "token.json"  # Stores the user's access and refresh tokens
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+class Email(BaseModel):
+    id: str
+    subject: str
+    sender: str
+    date: str
+    snippet: str
+    body_preview: str | None
+
+    def __str__(self) -> str:
+        return f"Email(id={self.id}, subject={self.subject}, \
+            sender={self.sender}, date={self.date}, snippet={self.snippet})"
 
 
 def load_credentials_from_file() -> Optional[Credentials]:
@@ -329,30 +343,47 @@ def decode_body(body_data):
         return None
 
 
-def format_message_info(message_id, headers, snippet, body_preview=None):
+def format_message_info(email: Email):
     """Format message information for display.
 
     Args:
-        message_id: The message ID
-        headers: Dictionary containing subject, sender, and date
-        snippet: The message snippet
-        body_preview: Optional preview of the message body
+        email: The email object
+
 
     Returns:
         Formatted string with message information
     """
     info = [
-        f"ID: {message_id}",
-        f"Subject: {headers['subject']}",
-        f"From: {headers['sender']}",
-        f"Date: {headers['date']}",
-        f"Snippet: {snippet}",
+        f"ID: {email.id}",
+        f"Subject: {email.subject}",
+        f"From: {email.sender}",
+        f"Date: {email.date}",
+        f"Snippet: {email.snippet}",
     ]
 
-    if body_preview:
-        info.append(f"Body (first 100 chars): {body_preview}...")
+    if email.body_preview:
+        info.append(f"Body (first 100 chars): {email.body_preview}...")
 
     return "\n".join(info)
+
+
+def build_email_from_message(msg_id: str, message: dict) -> Email:
+    headers = extract_headers(message)
+    snippet = message.get("snippet", "No snippet available.")
+    body_data = extract_body_data(message)
+    body_preview = None
+    if body_data:
+        decoded_body = decode_body(body_data)
+        if decoded_body:
+            body_preview = decoded_body[:100]
+    return Email(
+        id=msg_id,
+        subject=headers["subject"],
+        sender=headers["sender"],
+        date=headers["date"],
+        snippet=snippet,
+        body_preview=body_preview,
+    )
 
 
 def list_and_read_emails(service, max_results=10):
@@ -378,24 +409,12 @@ def list_and_read_emails(service, max_results=10):
         if not message:
             continue
 
-        # Extract headers
-        headers = extract_headers(message)
-
-        # Get the snippet
-        snippet = message.get("snippet", "No snippet available.")
-
-        # Extract and decode body
-        body_data = extract_body_data(message)
-        body_preview = None
-        if body_data:
-            decoded_body = decode_body(body_data)
-            if decoded_body:
-                body_preview = decoded_body[:100]
-        else:
-            logger.info("Body data not found in expected parts.")
+        email = build_email_from_message(msg_id, message)
+        logger.info(email)
+        logger.info("-" * 30)
 
         # Format and display message info
-        message_info = format_message_info(msg_id, headers, snippet, body_preview)
+        message_info = format_message_info(email)
         logger.info(message_info)
         logger.info("-" * 30)
 
