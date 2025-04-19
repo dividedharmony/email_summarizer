@@ -12,7 +12,8 @@ from googleapiclient.discovery import build  # type: ignore
 from googleapiclient.errors import HttpError  # type: ignore
 from pydantic import BaseModel
 
-load_dotenv()
+if __name__ == "__main__":
+    load_dotenv()
 
 # --- Configuration ---
 # If modifying these scopes, delete the file token.json.
@@ -386,21 +387,17 @@ def build_email_from_message(msg_id: str, message: dict) -> Email:
     )
 
 
-def list_and_read_emails(service, max_results=10):
+def list_emails(service, max_results=10) -> list[Email]:
     """Lists the user's email messages and prints basic info."""
     if not service:
         logger.error("Gmail service not available.")
-        return
+        return []
 
-    # Get list of messages
     messages = list_messages(service, max_results)
-
     if not messages:
-        return
+        return []
 
-    logger.info(f"\nFetching details for the latest {len(messages)} messages:")
-    logger.info("-" * 30)
-
+    emails = []
     for message_info in messages:
         msg_id = message_info["id"]
 
@@ -410,6 +407,17 @@ def list_and_read_emails(service, max_results=10):
             continue
 
         email = build_email_from_message(msg_id, message)
+        if email:
+            emails.append(email)
+
+    return emails
+
+
+def read_emails(emails: list[Email]):
+    logger.info(f"\nFetching details for the latest {len(emails)} messages:")
+    logger.info("-" * 30)
+
+    for email in emails:
         logger.info(email)
         logger.info("-" * 30)
 
@@ -422,4 +430,5 @@ def list_and_read_emails(service, max_results=10):
 if __name__ == "__main__":
     gmail_service = authenticate_gmail()
     if gmail_service:
-        list_and_read_emails(gmail_service, max_results=5)  # List latest 5 emails
+        emails = list_emails(gmail_service, max_results=5)
+        read_emails(emails)

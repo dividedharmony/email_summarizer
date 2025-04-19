@@ -2,7 +2,12 @@ import asyncio  # Required for discord.py v2.0+ even for simple tasks
 import os
 
 import discord
+import pystache
 from dotenv import load_dotenv
+
+from email_summarizer.services.gmail import (Email, authenticate_gmail,
+                                             list_emails)
+from email_summarizer.views.email_report import EmailReport
 
 if __name__ == "__main__":
     load_dotenv()
@@ -27,6 +32,24 @@ intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 
 
+class EmailUnavailableError(Exception):
+    pass
+
+
+def get_emails():
+    gmail_service = authenticate_gmail()
+    if not gmail_service:
+        raise EmailUnavailableError("Gmail service not available.")
+    emails = list_emails(gmail_service, max_results=5)
+    return emails
+
+
+def compose_report(emails: list[Email]):
+    email_report = EmailReport(emails=emails)
+    template = pystache.Renderer().render(email_report)
+    return template
+
+
 @client.event
 async def on_ready():
     """
@@ -41,9 +64,17 @@ async def on_ready():
 
         if channel:
             print(f"Found channel: {channel.name} ({channel.id})")
-            # Send the message
-            await channel.send(MESSAGE_TO_SEND)
-            print(f"Message sent to #{channel.name}")
+
+            try:
+                emails = get_emails()
+                report = compose_report(emails)
+                # Send the message
+                await channel.send(report)
+                print(f"Message sent to #{channel.name}")
+            except EmailUnavailableError as e:
+                print(f"Error: {e}")
+                await channel.send("Error: Gmail service not available.")
+                print("Reported error to channel.")
         else:
             print(f"Could not find channel with ID: {CHANNEL_ID}")
             print("Please check:")

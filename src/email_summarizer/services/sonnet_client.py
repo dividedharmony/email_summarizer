@@ -1,11 +1,9 @@
-import os
-import json
 import logging
-from typing import Dict, List, Optional, Tuple, Any, Union
+import os
+from typing import Any, Dict, Optional, Tuple
 
 import boto3
 from botocore.exceptions import ClientError
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -22,20 +20,20 @@ def configure_logging() -> None:
 class BedrockReasoningClient:
     """
     Client for interacting with Claude's reasoning capabilities via Amazon Bedrock.
-    
+
     This class encapsulates the logic for setting up a connection to Amazon Bedrock
     and invoking Claude 3.7 Sonnet with reasoning capabilities enabled.
     """
-    
+
     def __init__(
-        self, 
-        region_name: str | None, 
+        self,
+        region_name: str | None,
         profile_name: str | None,
-        default_model_id: str | None
+        default_model_id: str | None,
     ):
         """
         Initialize the BedrockReasoningClient.
-        
+
         Args:
             region_name: AWS region for the Bedrock client
             default_model_id: Default Claude model ID to use
@@ -45,14 +43,14 @@ class BedrockReasoningClient:
         self.profile_name: str = profile_name or "data_reply"
         self.default_model_id: str = default_model_id or os.environ["SONNET_MODEL_ID"]
         self.client = self._create_client()
-    
+
     def _create_client(self) -> Any:
         """
         Create and return a configured Amazon Bedrock runtime client.
-        
+
         Returns:
             Configured Bedrock runtime client
-        
+
         Raises:
             Exception: If client creation fails
         """
@@ -67,7 +65,7 @@ class BedrockReasoningClient:
         except Exception as e:
             self.logger.error(f"Failed to create Bedrock client: {e}")
             raise
-    
+
     def invoke_reasoning(
         self,
         prompt: str,
@@ -77,23 +75,23 @@ class BedrockReasoningClient:
     ) -> Tuple[Optional[str], Optional[str]]:
         """
         Invoke Claude with reasoning capability enabled.
-        
+
         Args:
             prompt: User prompt to send to Claude
             reasoning_budget: Token budget for the reasoning step
             model_id: Bedrock model ID to override default
             temperature: Sampling temperature (0.0 to 1.0)
-            
+
         Returns:
             Tuple containing (reasoning_text, response_text)
-            
+
         Raises:
             ClientError: If the Bedrock API returns an error
             KeyError: If the response has an unexpected structure
             Exception: For any other unexpected errors
         """
         model_id = model_id or self.default_model_id
-        
+
         conversation = [
             {
                 "role": "user",
@@ -102,12 +100,9 @@ class BedrockReasoningClient:
         ]
 
         reasoning_config = {
-            "thinking": {
-                "type": "enabled",
-                "budget_tokens": reasoning_budget
-            }
+            "thinking": {"type": "enabled", "budget_tokens": reasoning_budget}
         }
-        
+
         # Additional model parameters
         inference_config = {
             "temperature": temperature,
@@ -119,7 +114,7 @@ class BedrockReasoningClient:
                 modelId=model_id,
                 messages=conversation,
                 inferenceConfig=inference_config,
-                additionalModelRequestFields=reasoning_config
+                additionalModelRequestFields=reasoning_config,
             )
 
             content_blocks = response["output"]["message"]["content"]
@@ -144,14 +139,14 @@ class BedrockReasoningClient:
         except Exception as e:
             self.logger.error(f"Unknown error during model invocation: {e}")
             raise
-    
+
     def get_model_info(self, target_model_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Get information about the currently configured model.
-        
+
         Args:
             model_id: Optional model ID to check, uses default if None
-            
+
         Returns:
             Dictionary with model information
         """
@@ -160,7 +155,7 @@ class BedrockReasoningClient:
             "model_id": model_id,
             "region": self.region_name,
             "provider": "Anthropic" if "anthropic" in model_id.lower() else "Unknown",
-            "version": model_id.split("-")[-1] if "-" in model_id else "Unknown"
+            "version": model_id.split("-")[-1] if "-" in model_id else "Unknown",
         }
 
 
@@ -168,7 +163,7 @@ def main() -> None:
     """Execute the Claude reasoning demonstration."""
     configure_logging()
     logger = logging.getLogger("claude_reasoning_demo")
-    
+
     try:
         # Complex chess puzzle that benefits from reasoning
         chess_puzzle_prompt = """
@@ -182,23 +177,23 @@ def main() -> None:
         - Black Bishops on c8 and g7
         - Black Knights on b8 and g8
         - Black Pawns on a7, b7, c7, d7, e7, f7, h7
-        
+
         White has just moved pawn from e2 to e4. Find the best move for Black and explain your reasoning step by step.
         """
-        
+
         logger.info("Initializing BedrockReasoningClient")
         client = BedrockReasoningClient(None, None, None)
-        
+
         # Print info about the model we're using
         model_info = client.get_model_info()
         logger.info(f"Using model: {model_info['model_id']} in {model_info['region']}")
-        
+
         # Invoke the model with our chess puzzle
         reasoning, response = client.invoke_reasoning(
             prompt=chess_puzzle_prompt,
             reasoning_budget=3000,  # Increased budget for the complex chess problem
         )
-        
+
         if reasoning and response:
             print("\n===== CLAUDE'S REASONING PROCESS =====")
             print(reasoning)
@@ -206,7 +201,7 @@ def main() -> None:
             print(response)
         else:
             logger.warning("Received incomplete response from Claude")
-            
+
     except Exception as e:
         logger.error(f"Failed to run demonstration: {e}")
 
