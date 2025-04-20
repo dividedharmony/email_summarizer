@@ -1,5 +1,6 @@
 import logging
 import os
+from enum import Enum
 from typing import Any, Dict, Optional, Tuple
 
 import boto3
@@ -17,6 +18,21 @@ def configure_logging() -> None:
     )
 
 
+class AnthropicModels(Enum):
+    SONNET = "SONNET"
+    HAIKU = "HAIKU"
+
+    @classmethod
+    def get_model_id(cls, model_name: "AnthropicModels" | None) -> str | None:
+        if model_name is None:
+            return None
+        if model_name == cls.SONNET:
+            return os.environ["SONNET_MODEL_ID"]
+        elif model_name == cls.HAIKU:
+            return os.environ["HAIKU_MODEL_ID"]
+        raise ValueError(f"Invalid model name: {model_name}")
+
+
 class BedrockReasoningClient:
     """
     Client for interacting with Claude's reasoning capabilities via Amazon Bedrock.
@@ -27,9 +43,10 @@ class BedrockReasoningClient:
 
     def __init__(
         self,
-        region_name: str | None,
-        profile_name: str | None,
-        default_model_id: str | None,
+        region_name: str | None = None,
+        profile_name: str | None = None,
+        model_name: AnthropicModels | None = None,
+        default_model_id: str | None = None,
     ):
         """
         Initialize the BedrockReasoningClient.
@@ -41,7 +58,12 @@ class BedrockReasoningClient:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.region_name: str = region_name or os.environ["AWS_REGION"]
         self.profile_name: str = profile_name or "data_reply"
-        self.default_model_id: str = default_model_id or os.environ["SONNET_MODEL_ID"]
+        self.default_model = model_name
+        self.default_model_id: str = (
+            default_model_id or AnthropicModels.get_model_id(self.default_model) or ""
+        )
+        if not self.default_model_id:
+            raise ValueError("Either model name or model ID must be provided")
         self.client = self._create_client()
 
     def _create_client(self) -> Any:
@@ -182,7 +204,7 @@ def main() -> None:
         """
 
         logger.info("Initializing BedrockReasoningClient")
-        client = BedrockReasoningClient(None, None, None)
+        client = BedrockReasoningClient(model_name=AnthropicModels.SONNET)
 
         # Print info about the model we're using
         model_info = client.get_model_info()
