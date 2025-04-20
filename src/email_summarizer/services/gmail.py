@@ -200,7 +200,7 @@ def list_messages(service, max_results=10):
         results = (
             service.users()
             .messages()
-            .list(userId="me", labelIds=["INBOX"], maxResults=max_results)
+            .list(userId="me", labelIds=["INBOX", "UNREAD"], maxResults=max_results)
             .execute()
         )
 
