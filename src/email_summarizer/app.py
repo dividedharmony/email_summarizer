@@ -1,5 +1,6 @@
 import asyncio  # Required for discord.py v2.0+ even for simple tasks
 import os
+from datetime import datetime
 
 import discord
 import pystache  # type: ignore
@@ -7,7 +8,7 @@ from dotenv import load_dotenv
 
 from email_summarizer.services.gmail import (Email, authenticate_gmail,
                                              list_emails)
-from email_summarizer.views.email_report import EmailReport  # type: ignore
+from email_summarizer.views.email_report import EmailReport
 
 if __name__ == "__main__":
     load_dotenv()
@@ -45,7 +46,7 @@ def get_emails():
 
 
 def compose_report(emails: list[Email]):
-    email_report = EmailReport(emails=emails)
+    email_report = EmailReport(emails=emails, today=datetime.now().strftime("%Y-%m-%d"))
     template = pystache.Renderer().render(email_report)
     return template
 
