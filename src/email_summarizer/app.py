@@ -2,12 +2,12 @@ import asyncio  # Required for discord.py v2.0+ even for simple tasks
 import os
 
 import discord
-import pystache
+import pystache  # type: ignore
 from dotenv import load_dotenv
 
 from email_summarizer.services.gmail import (Email, authenticate_gmail,
                                              list_emails)
-from email_summarizer.views.email_report import EmailReport
+from email_summarizer.views.email_report import EmailReport  # type: ignore
 
 if __name__ == "__main__":
     load_dotenv()
