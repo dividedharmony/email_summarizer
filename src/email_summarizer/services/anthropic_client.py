@@ -1,11 +1,12 @@
 import logging
 import os
 from enum import Enum
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import boto3
 from botocore.exceptions import ClientError
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -31,6 +32,11 @@ class AnthropicModels(Enum):
         elif model_name == cls.HAIKU:
             return os.environ["HAIKU_MODEL_ID"]
         raise ValueError(f"Invalid model name: {model_name}")
+
+
+class ModelResponse(BaseModel):
+    reasoning: Optional[str]
+    response: Optional[str]
 
 
 class BedrockReasoningClient:
@@ -88,13 +94,13 @@ class BedrockReasoningClient:
             self.logger.error(f"Failed to create Bedrock client: {e}")
             raise
 
-    def invoke_reasoning(
+    def invoke_model(
         self,
         prompt: str,
-        reasoning_budget: int = 2000,
         model_id: Optional[str] = None,
         temperature: float = 1,
-    ) -> Tuple[Optional[str], Optional[str]]:
+        additional_model_request_fields: Optional[Dict[str, Any]] = None,
+    ) -> ModelResponse:
         """
         Invoke Claude with reasoning capability enabled.
 
@@ -121,10 +127,6 @@ class BedrockReasoningClient:
             }
         ]
 
-        reasoning_config = {
-            "thinking": {"type": "enabled", "budget_tokens": reasoning_budget}
-        }
-
         # Additional model parameters
         inference_config = {
             "temperature": temperature,
@@ -136,7 +138,7 @@ class BedrockReasoningClient:
                 modelId=model_id,
                 messages=conversation,
                 inferenceConfig=inference_config,
-                additionalModelRequestFields=reasoning_config,
+                additionalModelRequestFields=additional_model_request_fields,
             )
 
             content_blocks = response["output"]["message"]["content"]
@@ -150,7 +152,7 @@ class BedrockReasoningClient:
                 if "text" in block:
                     response_text = block["text"]
 
-            return reasoning_text, response_text
+            return ModelResponse(reasoning=reasoning_text, response=response_text)
 
         except ClientError as e:
             self.logger.error(f"Bedrock API error: {e}")
@@ -161,6 +163,16 @@ class BedrockReasoningClient:
         except Exception as e:
             self.logger.error(f"Unknown error during model invocation: {e}")
             raise
+
+    def invoke_reasoning(
+        self, prompt: str, reasoning_budget: int = 2000
+    ) -> ModelResponse:
+        reasoning_config = {
+            "thinking": {"type": "enabled", "budget_tokens": reasoning_budget}
+        }
+        return self.invoke_model(
+            prompt, additional_model_request_fields=reasoning_config
+        )
 
     def get_model_info(self, target_model_id: Optional[str] = None) -> Dict[str, Any]:
         """
