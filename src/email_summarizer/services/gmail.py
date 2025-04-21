@@ -4,6 +4,7 @@ import os
 import os.path
 from typing import Optional
 
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -368,15 +369,20 @@ def format_message_info(email: Email):
     return "\n".join(info)
 
 
+def parse_body(body_data: str | None) -> str | None:
+    if body_data:
+        decoded_body = decode_body(body_data)
+        if decoded_body:
+            soup = BeautifulSoup(decoded_body, "html.parser")
+            return soup.get_text(separator=" ", strip=True)
+    return None
+
+
 def build_email_from_message(msg_id: str, message: dict) -> Email:
     headers = extract_headers(message)
     snippet = message.get("snippet", "No snippet available.")
     body_data = extract_body_data(message)
-    body_preview = None
-    if body_data:
-        decoded_body = decode_body(body_data)
-        if decoded_body:
-            body_preview = decoded_body[:100]
+    body_preview = parse_body(body_data)
     return Email(
         id=msg_id,
         subject=headers["subject"],
