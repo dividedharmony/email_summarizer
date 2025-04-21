@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 
 import discord
-import pystache  # type: ignore
 from dotenv import load_dotenv
 
 from email_summarizer.models.email import Email
@@ -78,12 +77,6 @@ def summarize_emails(emails: list[Email]) -> EmailReport:
         summaries=summaries,
         today=datetime.now().strftime("%Y-%m-%d %H:%M"),
     )
-
-
-def compose_report(emails: list[Email]):
-    email_report = summarize_emails(emails)
-    template = pystache.Renderer().render(email_report)
-    return template
 
 
 @client.event
