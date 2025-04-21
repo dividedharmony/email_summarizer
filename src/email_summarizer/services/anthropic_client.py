@@ -24,7 +24,7 @@ class AnthropicModels(Enum):
     HAIKU = "HAIKU"
 
     @classmethod
-    def get_model_id(cls, model_name: "AnthropicModels" | None) -> str | None:
+    def get_model_id(cls, model_name: "AnthropicModels | None") -> str | None:
         if model_name is None:
             return None
         if model_name == cls.SONNET:

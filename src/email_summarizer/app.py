@@ -6,8 +6,12 @@ import discord
 import pystache  # type: ignore
 from dotenv import load_dotenv
 
-from email_summarizer.services.gmail import (Email, authenticate_gmail,
-                                             list_emails)
+from email_summarizer.prompts.summary_prompt import SUMMARY_PROMPT
+from email_summarizer.services.anthropic_client import (
+    AnthropicModels,
+    BedrockReasoningClient,
+)
+from email_summarizer.services.gmail import Email, authenticate_gmail, list_emails
 from email_summarizer.views.email_report import EmailReport
 
 if __name__ == "__main__":
@@ -45,8 +49,38 @@ def get_emails():
     return emails
 
 
+def email_to_prompt(email: Email) -> str:
+    return f"""
+    Sender: {email.sender}
+    Subject: {email.subject} - {email.snippet}
+    Body:
+      <body>
+        {email.body_preview}
+      </body>
+    """
+
+
+def summarize_one_email(client: BedrockReasoningClient, email: Email) -> str:
+    prompt = email_to_prompt(email)
+    response = client.invoke_model(prompt=prompt, system_prompt=SUMMARY_PROMPT)
+    return response.response
+
+
+def summarize_emails(emails: list[Email]) -> EmailReport:
+    client = BedrockReasoningClient(model_name=AnthropicModels.HAIKU)
+    summaries = []
+    for email in emails:
+        summary = summarize_one_email(client, email)
+        summaries.append(summary)
+    return EmailReport(
+        emails=emails,
+        summaries=summaries,
+        today=datetime.now().strftime("%Y-%m-%d %H:%M"),
+    )
+
+
 def compose_report(emails: list[Email]):
-    email_report = EmailReport(emails=emails, today=datetime.now().strftime("%Y-%m-%d"))
+    email_report = summarize_emails(emails)
     template = pystache.Renderer().render(email_report)
     return template
 
@@ -68,9 +102,10 @@ async def on_ready():
 
             try:
                 emails = get_emails()
-                report = compose_report(emails)
-                # Send the message
-                await channel.send(report)
+                email_report = summarize_emails(emails)
+                await channel.send(f"# Email Report {email_report.today}")
+                for i, summary in email_report.summaries:
+                    await channel.send(f"{i}. {summary}")
                 print(f"Message sent to #{channel.name}")
             except EmailUnavailableError as e:
                 print(f"Error: {e}")

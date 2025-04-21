@@ -45,4 +45,6 @@ Mellow Mushroom Order Received. Half & Half Pizza ready for pickup at 8:46 PM on
 - The summary should be in the present tense.
 - The summary should be in the active voice.
 - The summary should be no more than 100 words.
+- Do not include your reasoning or any explanation of your response.
+- Do not include any other text than the summary.
 """
