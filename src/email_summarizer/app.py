@@ -104,8 +104,8 @@ async def on_ready():
                 emails = get_emails()
                 email_report = summarize_emails(emails)
                 await channel.send(f"# Email Report {email_report.today}")
-                for i, summary in email_report.summaries:
-                    await channel.send(f"{i}. {summary}")
+                for i, summary in enumerate(email_report.summaries):
+                    await channel.send(f"{i + 1}. {summary}")
                 print(f"Message sent to #{channel.name}")
             except EmailUnavailableError as e:
                 print(f"Error: {e}")
