@@ -6,13 +6,15 @@ import discord
 import pystache  # type: ignore
 from dotenv import load_dotenv
 
+from email_summarizer.models.email import Email
+from email_summarizer.models.report import EmailReport
+from email_summarizer.models.summary import Summary
 from email_summarizer.prompts.summary_prompt import SUMMARY_PROMPT
 from email_summarizer.services.anthropic_client import (
     AnthropicModels,
     BedrockReasoningClient,
 )
-from email_summarizer.services.gmail import Email, authenticate_gmail, list_emails
-from email_summarizer.views.email_report import EmailReport
+from email_summarizer.services.gmail import authenticate_gmail, list_emails
 
 if __name__ == "__main__":
     load_dotenv()
@@ -60,20 +62,19 @@ def email_to_prompt(email: Email) -> str:
     """
 
 
-def summarize_one_email(client: BedrockReasoningClient, email: Email) -> str:
+def build_summary(client: BedrockReasoningClient, email: Email) -> Summary:
     prompt = email_to_prompt(email)
     response = client.invoke_model(prompt=prompt, system_prompt=SUMMARY_PROMPT)
-    return response.response
+    return Summary(body=response.response, email=email)
 
 
 def summarize_emails(emails: list[Email]) -> EmailReport:
     client = BedrockReasoningClient(model_name=AnthropicModels.HAIKU)
     summaries = []
     for email in emails:
-        summary = summarize_one_email(client, email)
+        summary = build_summary(client, email)
         summaries.append(summary)
     return EmailReport(
-        emails=emails,
         summaries=summaries,
         today=datetime.now().strftime("%Y-%m-%d %H:%M"),
     )
@@ -104,8 +105,13 @@ async def on_ready():
                 emails = get_emails()
                 email_report = summarize_emails(emails)
                 await channel.send(f"# Email Report {email_report.today}")
-                for i, summary in enumerate(email_report.summaries):
-                    await channel.send(f"{i + 1}. {summary}")
+                if len(email_report.summaries) > 0:
+                    for i, summary in enumerate(email_report.summaries):
+                        await channel.send(
+                            f"{i + 1}. ({summary.email.sender}) {summary.body}"
+                        )
+                else:
+                    await channel.send("No emails to report.")
                 print(f"Message sent to #{channel.name}")
             except EmailUnavailableError as e:
                 print(f"Error: {e}")

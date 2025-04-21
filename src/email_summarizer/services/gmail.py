@@ -11,7 +11,8 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore
 from googleapiclient.discovery import build  # type: ignore
 from googleapiclient.errors import HttpError  # type: ignore
-from pydantic import BaseModel
+
+from email_summarizer.models.email import Email
 
 if __name__ == "__main__":
     load_dotenv()
@@ -26,19 +27,6 @@ TOKEN_FILE = "token.json"  # Stores the user's access and refresh tokens
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-class Email(BaseModel):
-    id: str
-    subject: str
-    sender: str
-    date: str
-    snippet: str
-    body_preview: str | None
-
-    def __str__(self) -> str:
-        return f"Email(id={self.id}, subject={self.subject}, \
-            sender={self.sender}, date={self.date}, snippet={self.snippet})"
 
 
 def load_credentials_from_file() -> Optional[Credentials]:
