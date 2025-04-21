@@ -99,6 +99,7 @@ class BedrockReasoningClient:
         prompt: str,
         model_id: Optional[str] = None,
         temperature: float = 1,
+        system_prompt: Optional[str] = None,
         additional_model_request_fields: Optional[Dict[str, Any]] = None,
     ) -> ModelResponse:
         """
@@ -127,6 +128,13 @@ class BedrockReasoningClient:
             }
         ]
 
+        system_parameter: Optional[list[dict[str, str]]] = None
+        if system_prompt:
+            system_parameter = [{"text": system_prompt}]
+            self.logger.info("System prompt provided.")
+        else:
+            self.logger.info("No system prompt provided.")
+
         # Additional model parameters
         inference_config = {
             "temperature": temperature,
@@ -138,6 +146,7 @@ class BedrockReasoningClient:
                 modelId=model_id,
                 messages=conversation,
                 inferenceConfig=inference_config,
+                system=system_parameter,
                 additionalModelRequestFields=additional_model_request_fields,
             )
 
