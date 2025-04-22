@@ -12,6 +12,9 @@ RUN pip install pipx && \
     pipx ensurepath && \
     pipx install poetry
 
+# Assumes running as root, common in Docker builds. Adjust if using a different user.
+ENV PATH="/root/.local/bin:${PATH}"
+
 # Configure Poetry to not create virtual environments within the container
 # This installs dependencies directly into the Python environment Lambda will use
 RUN poetry config virtualenvs.create false
@@ -21,7 +24,7 @@ COPY pyproject.toml poetry.lock ./
 
 # Install project dependencies (excluding development dependencies)
 # Use --no-dev or --only main
-RUN poetry install --no-dev --sync
+RUN poetry install --only main --no-root --sync
 
 # Copy the rest of your application code
 # Adjust the source path if your code is in a subdirectory like 'src/'
