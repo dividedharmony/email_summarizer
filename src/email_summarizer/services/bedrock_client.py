@@ -44,8 +44,8 @@ class BedrockClientFactory:
             self.bedrock_client = BedrockClient(
                 service_name=BedrockClientFactory.service_name,
                 region=BedrockClientFactory.region,
-                aws_access_key=os.environ.get("AWS_ACCESS_KEY_ID"),
-                aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+                aws_access_key=os.environ.get("BOTO_ACCESS_KEY_ID"),
+                aws_secret_access_key=os.environ.get("BOTO_SECRET_ACCESS_KEY"),
                 deepseek_inference_profile=os.environ.get("DEEPSEEK_INFERENCE_PROFILE"),
             )
         return self.bedrock_client

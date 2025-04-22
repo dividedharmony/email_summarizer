@@ -85,8 +85,8 @@ class BedrockReasoningClient:
         try:
             # Using default credentials from environment or AWS config
             session = boto3.Session(
-                aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-                aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+                aws_access_key_id=os.getenv("BOTO_ACCESS_KEY_ID"),
+                aws_secret_access_key=os.getenv("BOTO_SECRET_ACCESS_KEY"),
                 region_name=self.region_name,
             )
             return session.client("bedrock-runtime")
