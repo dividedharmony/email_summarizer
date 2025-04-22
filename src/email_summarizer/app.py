@@ -23,6 +23,7 @@ channel_id_str = os.getenv("DISCORD_CHANNEL_ID")
 if not isinstance(channel_id_str, str):
     raise ValueError("DISCORD_CHANNEL_ID is not a string")
 CHANNEL_ID = int(channel_id_str)
+MAX_EMAILS = int(os.getenv("MAX_EMAILS", 5))
 MESSAGE_TO_SEND = "Hello from my Python App!"
 # --- End Configuration ---
 
@@ -42,11 +43,11 @@ class EmailUnavailableError(Exception):
     pass
 
 
-def get_emails():
+def get_emails(max_results: int):
     gmail_service = authenticate_gmail()
     if not gmail_service:
         raise EmailUnavailableError("Gmail service not available.")
-    emails = list_emails(gmail_service, max_results=5)
+    emails = list_emails(gmail_service, max_results=max_results)
     return emails
 
 
@@ -95,7 +96,7 @@ async def on_ready():
             print(f"Found channel: {channel.name} ({channel.id})")
 
             try:
-                emails = get_emails()
+                emails = get_emails(max_results=MAX_EMAILS)
                 email_report = summarize_emails(emails)
                 await channel.send(f"# Email Report {email_report.today}")
                 if len(email_report.summaries) > 0:
