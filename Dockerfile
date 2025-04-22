@@ -24,7 +24,7 @@ COPY pyproject.toml poetry.lock ./
 
 # Install project dependencies (excluding development dependencies)
 # Use --no-dev or --only main
-RUN poetry install --only main --no-root --sync
+RUN poetry install --only main --no-root
 
 # Copy the rest of your application code
 # Adjust the source path if your code is in a subdirectory like 'src/'
@@ -35,4 +35,4 @@ COPY . ${LAMBDA_TASK_ROOT}/
 # Format: <module_path>.<function_name>
 # Example if your handler is in app.py: CMD [ "app.lambda_handler" ]
 # Example if handler is in src/my_app/handler.py: CMD [ "src.my_app.handler.lambda_handler" ]
-CMD [ "email_summarizer.lambda_function.lambda_handler" ]
+CMD [ "lambda_function.lambda_handler" ]
