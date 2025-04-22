@@ -67,7 +67,18 @@ def refresh_credentials(creds: Credentials) -> Optional[Credentials]:
         return None
 
 
-def create_new_credentials() -> Optional[Credentials]:
+def create_credentials() -> Credentials:
+    return Credentials(
+        token=None,
+        refresh_token=os.getenv("GMAIL_REFRESH_TOKEN"),
+        token_uri=os.getenv("GMAIL_TOKEN_URI"),
+        client_id=os.getenv("GMAIL_CLIENT_ID"),
+        client_secret=os.getenv("GMAIL_CLIENT_SECRET"),
+        scopes=SCOPES,
+    )
+
+
+def locally_create_credentials() -> Optional[Credentials]:
     """Create new credentials through the OAuth flow.
 
     Returns:
@@ -144,25 +155,27 @@ def authenticate_gmail():
     Returns:
         The Gmail API service or None if authentication fails
     """
-    # Try to load existing credentials
-    creds = load_credentials_from_file()
+    # # Try to load existing credentials
+    # creds = load_credentials_from_file()
 
-    # If credentials are invalid or don't exist, handle authentication
-    if not creds or not creds.valid:
-        # Try to refresh expired credentials
-        if creds:
-            creds = refresh_credentials(creds)
+    # # If credentials are invalid or don't exist, handle authentication
+    # if not creds or not creds.valid:
+    #     # Try to refresh expired credentials
+    #     if creds:
+    #         creds = refresh_credentials(creds)
 
-        # If refresh failed or credentials don't exist, create new ones
-        if not creds:
-            creds = create_new_credentials()
+    #     # If refresh failed or credentials don't exist, create new ones
+    #     if not creds:
+    #         creds = create_credentials()
 
-        # Save new credentials if we got them
-        if creds:
-            save_credentials(creds)
-        else:
-            logger.error("Failed to obtain credentials.")
-            return None
+    #     # Save new credentials if we got them
+    #     if creds:
+    #         save_credentials(creds)
+    #     else:
+    #         logger.error("Failed to obtain credentials.")
+    #         return None
+
+    creds = create_credentials()
 
     # Build and return the service
     return build_gmail_service(creds)
