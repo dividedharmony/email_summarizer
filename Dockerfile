@@ -31,6 +31,9 @@ RUN poetry install --only main --no-root
 # Example if your code is in 'src/': COPY src/ ${LAMBDA_TASK_ROOT}/src/
 COPY . ${LAMBDA_TASK_ROOT}/
 
+# Set the PYTHONPATH to include the src directory
+ENV PYTHONPATH="${LAMBDA_TASK_ROOT}/src:${PYTHONPATH}"
+
 # Set the CMD to your handler function
 # Format: <module_path>.<function_name>
 # Example if your handler is in app.py: CMD [ "app.lambda_handler" ]
