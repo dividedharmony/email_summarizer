@@ -1,6 +1,7 @@
 import asyncio  # Required for discord.py v2.0+ even for simple tasks
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import discord
 from dotenv import load_dotenv
@@ -24,7 +25,7 @@ if not isinstance(channel_id_str, str):
     raise ValueError("DISCORD_CHANNEL_ID is not a string")
 CHANNEL_ID = int(channel_id_str)
 MAX_EMAILS = int(os.getenv("MAX_EMAILS", 5))
-MESSAGE_TO_SEND = "Hello from my Python App!"
+ET_TIMEZONE = ZoneInfo("America/New_York")
 # --- End Configuration ---
 
 # Define necessary intents
@@ -76,7 +77,7 @@ def summarize_emails(emails: list[Email]) -> EmailReport:
         summaries.append(summary)
     return EmailReport(
         summaries=summaries,
-        today=datetime.now().strftime("%Y-%m-%d %H:%M"),
+        today=datetime.now(tz=ET_TIMEZONE).strftime("%Y-%m-%d %H:%M"),
     )
 
 
