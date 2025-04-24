@@ -16,3 +16,4 @@ build/
 client_secret.json
 token.json
 tmp/
+deploy.sh
