@@ -7,6 +7,7 @@ import discord
 from dotenv import load_dotenv
 
 from email_summarizer.models.email import Email
+from email_summarizer.models.enums import EmailAccounts
 from email_summarizer.models.report import EmailReport
 from email_summarizer.models.summary import Summary
 from email_summarizer.prompts.summary_prompt import SUMMARY_PROMPT
@@ -15,6 +16,7 @@ from email_summarizer.services.anthropic_client import (
     BedrockReasoningClient,
 )
 from email_summarizer.services.gmail import authenticate_gmail, list_emails
+from email_summarizer.utils.email_address_utils import get_email_address
 
 if __name__ == "__main__":
     load_dotenv()
@@ -136,9 +138,12 @@ async def on_ready():
         await client.close()
 
 
-async def run_bot():
+async def run_bot(email_account_type: str):
     """Handles login and potential errors"""
+    email_account = EmailAccounts(email_account_type)
+    email_address = get_email_address(email_account)
     try:
+        client.target_email_address = email_address
         await client.start(BOT_TOKEN)
     except discord.errors.LoginFailure:
         print(
@@ -150,4 +155,5 @@ async def run_bot():
 
 # Run the bot
 if __name__ == "__main__":
-    asyncio.run(run_bot())
+    email_account_type = EmailAccounts.PRIMARY.value
+    asyncio.run(run_bot(email_account_type))
