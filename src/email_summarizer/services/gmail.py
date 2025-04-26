@@ -13,6 +13,8 @@ from googleapiclient.discovery import build  # type: ignore
 from googleapiclient.errors import HttpError  # type: ignore
 
 from email_summarizer.models.email import Email
+from email_summarizer.models.enums import EmailAccounts
+from email_summarizer.utils.gmail_credentials import build_gmail_credentials
 
 if __name__ == "__main__":
     load_dotenv()
@@ -65,17 +67,6 @@ def refresh_credentials(creds: Credentials) -> Optional[Credentials]:
     except Exception as e:
         logger.error(f"An error occurred during token refresh: {e}")
         return None
-
-
-def create_credentials() -> Credentials:
-    return Credentials(
-        token=None,
-        refresh_token=os.getenv("GMAIL_REFRESH_TOKEN"),
-        token_uri=os.getenv("GMAIL_TOKEN_URI"),
-        client_id=os.getenv("GMAIL_CLIENT_ID"),
-        client_secret=os.getenv("GMAIL_CLIENT_SECRET"),
-        scopes=SCOPES,
-    )
 
 
 def locally_create_credentials() -> Optional[Credentials]:
@@ -148,7 +139,7 @@ def build_gmail_service(creds: Credentials | None):
         return None
 
 
-def authenticate_gmail():
+def authenticate_gmail(email_account: EmailAccounts):
     """Shows basic usage of the Gmail API.
     Handles user authentication and returns the Gmail API service object.
 
@@ -166,7 +157,7 @@ def authenticate_gmail():
 
     #     # If refresh failed or credentials don't exist, create new ones
     #     if not creds:
-    #         creds = create_credentials()
+    #         creds = locally_create_credentials()
 
     #     # Save new credentials if we got them
     #     if creds:
@@ -175,7 +166,7 @@ def authenticate_gmail():
     #         logger.error("Failed to obtain credentials.")
     #         return None
 
-    creds = create_credentials()
+    creds = build_gmail_credentials(email_account)
 
     # Build and return the service
     return build_gmail_service(creds)
@@ -435,7 +426,8 @@ def read_emails(emails: list[Email]):
 
 
 if __name__ == "__main__":
-    gmail_service = authenticate_gmail()
+    email_account = EmailAccounts.PRIMARY
+    gmail_service = authenticate_gmail(email_account)
     if gmail_service:
         emails = list_emails(gmail_service, max_results=5)
         read_emails(emails)

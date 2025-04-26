@@ -16,7 +16,6 @@ from email_summarizer.services.anthropic_client import (
     BedrockReasoningClient,
 )
 from email_summarizer.services.gmail import authenticate_gmail, list_emails
-from email_summarizer.utils.email_address_utils import get_email_address
 
 if __name__ == "__main__":
     load_dotenv()
@@ -46,8 +45,8 @@ class EmailUnavailableError(Exception):
     pass
 
 
-def get_emails(max_results: int):
-    gmail_service = authenticate_gmail()
+def get_emails(email_account: EmailAccounts, max_results: int):
+    gmail_service = authenticate_gmail(email_account)
     if not gmail_service:
         raise EmailUnavailableError("Gmail service not available.")
     emails = list_emails(gmail_service, max_results=max_results)
@@ -94,36 +93,33 @@ async def on_ready():
     try:
         # Get the channel object using the ID
         channel = client.get_channel(CHANNEL_ID)
+        # Get the email account set in run_bot
+        email_account = client.target_email_account
 
-        if channel:
-            print(f"Found channel: {channel.name} ({channel.id})")
+        if not channel:
+            raise ValueError(f"Could not find channel with ID: {CHANNEL_ID}")
 
-            try:
-                emails = get_emails(max_results=MAX_EMAILS)
-                email_report = summarize_emails(emails)
-                await channel.send(f"# Email Report {email_report.today}")
-                if len(email_report.summaries) > 0:
-                    for i, summary in enumerate(email_report.summaries):
-                        await channel.send(
-                            f"{i + 1}. ({summary.email.sender}) {summary.body}"
-                        )
-                else:
-                    await channel.send("No emails to report.")
-                print(f"Message sent to #{channel.name}")
-            except EmailUnavailableError as e:
-                print(f"Error: {e}")
-                await channel.send("Error: Gmail service not available.")
-                print("Reported error to channel.")
-        else:
-            print(f"Could not find channel with ID: {CHANNEL_ID}")
-            print("Please check:")
-            print("1. If the CHANNEL_ID is correct.")
-            print(
-                "2. If the bot has 'View Channel' and 'Send Messages' permissions for that channel."
-            )
-            print(
-                "3. If the bot has been invited to the server containing the channel."
-            )
+        if not email_account:
+            raise ValueError("Email account not set.")
+
+        print(f"Found channel: {channel.name} ({channel.id})")
+
+        try:
+            emails = get_emails(email_account, max_results=MAX_EMAILS)
+            email_report = summarize_emails(emails)
+            await channel.send(f"# Email Report {email_report.today}")
+            if len(email_report.summaries) > 0:
+                for i, summary in enumerate(email_report.summaries):
+                    await channel.send(
+                        f"{i + 1}. ({summary.email.sender}) {summary.body}"
+                    )
+            else:
+                await channel.send("No emails to report.")
+            print(f"Message sent to #{channel.name}")
+        except EmailUnavailableError as e:
+            print(f"Error: {e}")
+            await channel.send("Error: Gmail service not available.")
+            print("Reported error to channel.")
 
     except discord.errors.Forbidden:
         print(
@@ -141,9 +137,8 @@ async def on_ready():
 async def run_bot(email_account_type: str):
     """Handles login and potential errors"""
     email_account = EmailAccounts(email_account_type)
-    email_address = get_email_address(email_account)
     try:
-        client.target_email_address = email_address
+        client.target_email_account = email_account
         await client.start(BOT_TOKEN)
     except discord.errors.LoginFailure:
         print(
