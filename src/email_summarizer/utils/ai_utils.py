@@ -1,7 +1,7 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from email_summarizer.models.email import Email
+from email_summarizer.models.email import Email, GroupedEmails
 from email_summarizer.models.enums import EmailAccounts
 from email_summarizer.models.report import EmailReport
 from email_summarizer.models.summary import Summary
@@ -31,7 +31,11 @@ def build_summary(client: BedrockReasoningClient, email: Email) -> Summary:
     return Summary(body=response.response, email=email)
 
 
-def summarize_emails(email_account: EmailAccounts, emails: list[Email]) -> EmailReport:
+def summarize_emails(
+    email_account: EmailAccounts,
+    emails: list[Email],
+    grouped_emails: list[GroupedEmails],
+) -> EmailReport:
     client = BedrockReasoningClient(model_name=AnthropicModels.HAIKU)
     summaries = []
     for email in emails:
@@ -41,5 +45,5 @@ def summarize_emails(email_account: EmailAccounts, emails: list[Email]) -> Email
         email_account=email_account,
         summaries=summaries,
         timestamp=datetime.now(tz=ET_TIMEZONE).strftime("%Y-%m-%d %H:%M"),
-        grouped_emails=[],
+        grouped_emails=grouped_emails,
     )

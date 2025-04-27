@@ -7,7 +7,11 @@ from dotenv import load_dotenv
 from email_summarizer.models.enums import EmailAccounts
 from email_summarizer.models.report import EmailReport
 from email_summarizer.utils.ai_utils import summarize_emails
-from email_summarizer.utils.email_utils import EmailUnavailableError, get_emails
+from email_summarizer.utils.email_utils import (
+    EmailUnavailableError,
+    get_emails,
+    group_en_masse_emails,
+)
 
 if __name__ == "__main__":
     load_dotenv()
@@ -60,7 +64,12 @@ async def on_ready():
 
         try:
             emails = get_emails(email_account, max_results=MAX_EMAILS)
-            email_report = summarize_emails(email_account, emails)
+            grouping_payload = group_en_masse_emails(emails)
+            email_report = summarize_emails(
+                email_account=email_account,
+                emails=grouping_payload.ungrouped_emails,
+                grouped_emails=grouping_payload.list_of_grouped_emails,
+            )
             await channel.send(_report_header(email_report))
             if len(email_report.summaries) > 0:
                 for i, summary in enumerate(email_report.summaries):
