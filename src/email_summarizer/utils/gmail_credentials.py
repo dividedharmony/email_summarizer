@@ -6,14 +6,16 @@ from email_summarizer.models.enums import EmailAccounts
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]  # Read-only access
 
+TOKEN_URI = "https://oauth2.googleapis.com/token"
+
 
 def build_gmail_credentials(email_account: EmailAccounts) -> Credentials:
     return Credentials(
         token=None,
+        token_uri=TOKEN_URI,
         refresh_token=_get_env_var(email_account, "REFRESH_TOKEN"),
-        token_uri=os.getenv("GMAIL_TOKEN_URI"),  # same for all clients
-        client_id=_get_env_var(email_account, "CLIENT_ID"),
-        client_secret=_get_env_var(email_account, "CLIENT_SECRET"),
+        client_id=os.getenv("GMAIL_CLIENT_ID"),
+        client_secret=os.getenv("GMAIL_CLIENT_SECRET"),
         scopes=SCOPES,
     )
 
