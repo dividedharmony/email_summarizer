@@ -81,7 +81,7 @@ async def on_ready():
                 await channel.send("### Grouped Emails")
                 for grouped_email in email_report.grouped_emails:
                     await channel.send(
-                        f"- ({grouped_email.sender}) {grouped_email.count}"
+                        f"- ({grouped_email.sender}) - message count: {grouped_email.count}"
                     )
             print(f"Message sent to #{channel.name}")
         except EmailUnavailableError as e:
