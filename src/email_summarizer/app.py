@@ -1,21 +1,13 @@
 import asyncio  # Required for discord.py v2.0+ even for simple tasks
 import os
-from datetime import datetime
-from zoneinfo import ZoneInfo
 
 import discord
 from dotenv import load_dotenv
 
-from email_summarizer.models.email import Email
 from email_summarizer.models.enums import EmailAccounts
 from email_summarizer.models.report import EmailReport
-from email_summarizer.models.summary import Summary
-from email_summarizer.prompts.summary_prompt import SUMMARY_PROMPT
-from email_summarizer.services.anthropic_client import (
-    AnthropicModels,
-    BedrockReasoningClient,
-)
-from email_summarizer.services.gmail import authenticate_gmail, list_emails
+from email_summarizer.utils.ai_utils import summarize_emails
+from email_summarizer.utils.email_utils import EmailUnavailableError, get_emails
 
 if __name__ == "__main__":
     load_dotenv()
@@ -26,7 +18,6 @@ if not isinstance(channel_id_str, str):
     raise ValueError("DISCORD_CHANNEL_ID is not a string")
 CHANNEL_ID = int(channel_id_str)
 MAX_EMAILS = int(os.getenv("MAX_EMAILS", 5))
-ET_TIMEZONE = ZoneInfo("America/New_York")
 # --- End Configuration ---
 
 # Define necessary intents
@@ -41,50 +32,8 @@ intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 
 
-class EmailUnavailableError(Exception):
-    pass
-
-
-def get_emails(email_account: EmailAccounts, max_results: int):
-    gmail_service = authenticate_gmail(email_account)
-    if not gmail_service:
-        raise EmailUnavailableError("Gmail service not available.")
-    emails = list_emails(gmail_service, max_results=max_results)
-    return emails
-
-
-def email_to_prompt(email: Email) -> str:
-    return f"""
-    Sender: {email.sender}
-    Subject: {email.subject} - {email.snippet}
-    Body:
-      <body>
-        {email.body_preview}
-      </body>
-    """
-
-
-def build_summary(client: BedrockReasoningClient, email: Email) -> Summary:
-    prompt = email_to_prompt(email)
-    response = client.invoke_model(prompt=prompt, system_prompt=SUMMARY_PROMPT)
-    return Summary(body=response.response, email=email)
-
-
 def _report_header(email_report: EmailReport) -> str:
     return f"# {email_report.email_account.value} Email Report {email_report.today}"
-
-
-def summarize_emails(email_account: EmailAccounts, emails: list[Email]) -> EmailReport:
-    client = BedrockReasoningClient(model_name=AnthropicModels.HAIKU)
-    summaries = []
-    for email in emails:
-        summary = build_summary(client, email)
-        summaries.append(summary)
-    return EmailReport(
-        email_account=email_account,
-        summaries=summaries,
-        today=datetime.now(tz=ET_TIMEZONE).strftime("%Y-%m-%d %H:%M"),
-    )
 
 
 @client.event
