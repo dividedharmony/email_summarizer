@@ -4,6 +4,8 @@ import json
 from email_summarizer.app import run_bot
 from email_summarizer.models.enums import EmailAccounts
 
+ACCOUNT_PARAM_KEY = "email_account_type"
+
 
 class MalformedEventError(Exception):
     pass
@@ -49,13 +51,15 @@ def _parse_email_account_from_event(event: dict) -> EmailAccounts:
     raw_email_account = None
     if isinstance(event.get("body"), str):
         try:
-            raw_email_account = json.loads(event["body"])
+            parsed_body = json.loads(event["body"])
+            raw_email_account = parsed_body.get(ACCOUNT_PARAM_KEY)
+
         except json.JSONDecodeError as json_error:
             raise MalformedEventError(
                 f"Event body is not a valid JSON string: {str(json_error)}"
             )
     elif isinstance(event.get("body"), dict):
-        raw_email_account = event["body"].get("email_account")
+        raw_email_account = event["body"].get(ACCOUNT_PARAM_KEY)
 
     if raw_email_account is None:
         raise MalformedEventError(
