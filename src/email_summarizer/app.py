@@ -67,8 +67,8 @@ async def on_ready():
             grouping_payload = group_en_masse_emails(emails)
             email_report = summarize_emails(
                 email_account=email_account,
-                emails=grouping_payload.ungrouped_emails,
-                grouped_emails=grouping_payload.list_of_grouped_emails,
+                emails=grouping_payload.get("ungrouped_emails", []),
+                grouped_emails=grouping_payload.get("list_of_grouped_emails", []),
             )
             await channel.send(_report_header(email_report))
             if email_report.is_empty():
