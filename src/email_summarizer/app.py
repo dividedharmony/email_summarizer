@@ -70,13 +70,18 @@ def build_summary(client: BedrockReasoningClient, email: Email) -> Summary:
     return Summary(body=response.response, email=email)
 
 
-def summarize_emails(emails: list[Email]) -> EmailReport:
+def _report_header(email_report: EmailReport) -> str:
+    return f"# {email_report.email_account.value} Email Report {email_report.today}"
+
+
+def summarize_emails(email_account: EmailAccounts, emails: list[Email]) -> EmailReport:
     client = BedrockReasoningClient(model_name=AnthropicModels.HAIKU)
     summaries = []
     for email in emails:
         summary = build_summary(client, email)
         summaries.append(summary)
     return EmailReport(
+        email_account=email_account,
         summaries=summaries,
         today=datetime.now(tz=ET_TIMEZONE).strftime("%Y-%m-%d %H:%M"),
     )
@@ -106,8 +111,8 @@ async def on_ready():
 
         try:
             emails = get_emails(email_account, max_results=MAX_EMAILS)
-            email_report = summarize_emails(emails)
-            await channel.send(f"# Email Report {email_report.today}")
+            email_report = summarize_emails(email_account, emails)
+            await channel.send(_report_header(email_report))
             if len(email_report.summaries) > 0:
                 for i, summary in enumerate(email_report.summaries):
                     await channel.send(
