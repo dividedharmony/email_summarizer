@@ -40,5 +40,6 @@ def summarize_emails(email_account: EmailAccounts, emails: list[Email]) -> Email
     return EmailReport(
         email_account=email_account,
         summaries=summaries,
-        today=datetime.now(tz=ET_TIMEZONE).strftime("%Y-%m-%d %H:%M"),
+        timestamp=datetime.now(tz=ET_TIMEZONE).strftime("%Y-%m-%d %H:%M"),
+        grouped_emails=[],
     )

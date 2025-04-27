@@ -33,7 +33,7 @@ client = discord.Client(intents=intents)
 
 
 def _report_header(email_report: EmailReport) -> str:
-    return f"# {email_report.email_account.value} Email Report {email_report.today}"
+    return f"# {email_report.email_account.value} Email Report {email_report.timestamp}"
 
 
 @client.event
