@@ -10,3 +10,6 @@ class EmailReport(BaseModel):
     summaries: list[Summary]
     timestamp: str
     grouped_emails: list[GroupedEmails]
+
+    def is_empty(self) -> bool:
+        return len(self.summaries) == 0 and len(self.grouped_emails) == 0

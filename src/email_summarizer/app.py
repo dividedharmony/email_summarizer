@@ -71,13 +71,18 @@ async def on_ready():
                 grouped_emails=grouping_payload.list_of_grouped_emails,
             )
             await channel.send(_report_header(email_report))
-            if len(email_report.summaries) > 0:
+            if email_report.is_empty():
+                await channel.send("No emails to report.")
+            else:
                 for i, summary in enumerate(email_report.summaries):
                     await channel.send(
                         f"{i + 1}. ({summary.email.sender}) {summary.body}"
                     )
-            else:
-                await channel.send("No emails to report.")
+                await channel.send("### Grouped Emails")
+                for grouped_email in email_report.grouped_emails:
+                    await channel.send(
+                        f"- ({grouped_email.sender}) {grouped_email.count}"
+                    )
             print(f"Message sent to #{channel.name}")
         except EmailUnavailableError as e:
             print(f"Error: {e}")
