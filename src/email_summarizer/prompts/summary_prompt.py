@@ -64,7 +64,7 @@ brackets.
 
 
 # Example Input
-{email_to_prompt(example_email)}
+{email_to_prompt(example_email, disable_redaction=True)["prompt_body"]}
 
 # Example Output
 [TRANSACTION] Mellow Mushroom Order Received. Half & Half Pizza ready for pickup at 8:46 PM on 12/31/2024.
@@ -76,6 +76,10 @@ brackets.
 - The summary should be no more than 100 words.
 - Do not include your reasoning or any explanation of your response.
 - Do not include any other text than the summary.
-
-{REDACTION_PROMPT}
 """
+
+
+def summary_system_prompt(needs_redaction: bool) -> str:
+    if needs_redaction:
+        return SUMMARY_PROMPT + "\n\n" + REDACTION_PROMPT
+    return SUMMARY_PROMPT

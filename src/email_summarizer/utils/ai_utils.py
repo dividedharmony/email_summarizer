@@ -6,8 +6,8 @@ from email_summarizer.models.email import Email, GroupedEmails
 from email_summarizer.models.enums import EmailAccounts
 from email_summarizer.models.report import EmailReport
 from email_summarizer.models.summary import Summary
-from email_summarizer.prompts.next_steps import NEXT_STEPS_PROMPT
-from email_summarizer.prompts.summary_prompt import SUMMARY_PROMPT
+from email_summarizer.prompts.next_steps import next_steps_system_prompt
+from email_summarizer.prompts.summary_prompt import summary_system_prompt
 from email_summarizer.services.anthropic_client import (
     AnthropicModels,
     BedrockReasoningClient,
@@ -18,8 +18,10 @@ ET_TIMEZONE = ZoneInfo("America/New_York")
 
 
 def build_summary(client: BedrockReasoningClient, email: Email) -> Summary:
+    prompt_payload = email_to_prompt(email)
     response = client.invoke_model(
-        prompt=email_to_prompt(email), system_prompt=SUMMARY_PROMPT
+        prompt=prompt_payload["prompt_body"],
+        system_prompt=summary_system_prompt(prompt_payload["was_redacted"]),
     )
     return Summary(body=response.response, email=email)
 
@@ -27,8 +29,10 @@ def build_summary(client: BedrockReasoningClient, email: Email) -> Summary:
 def build_actionable_email(
     client: BedrockReasoningClient, email: Email
 ) -> ActionableEmail:
+    prompt_payload = email_to_prompt(email)
     response = client.invoke_model(
-        prompt=email_to_prompt(email), system_prompt=NEXT_STEPS_PROMPT
+        prompt=prompt_payload["prompt_body"],
+        system_prompt=next_steps_system_prompt(prompt_payload["was_redacted"]),
     )
     return ActionableEmail(next_steps=response.response, email=email)
 

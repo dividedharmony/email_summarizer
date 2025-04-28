@@ -79,7 +79,7 @@ suggest other next steps that are more appropriate for the given email.
 
 
 # Example Input
-{email_to_prompt(example_email)}
+{email_to_prompt(example_email, disable_redaction=True)["prompt_body"]}
 
 # Example Output
 Jane Doe forwarded an email from KFC. KFC received your order. \
@@ -94,6 +94,10 @@ NEXT STEPS: Pick up at 8:30 PM at 123 West Alpha Blvd, Chatham, NC 55123.
 - Do not include any other text than the summary and the next steps.
 - Next steps should be a single action that the recipient should take.
 - Next steps should be actionable and specific.
-
-{REDACTION_PROMPT}
 """
+
+
+def next_steps_system_prompt(needs_redaction: bool) -> str:
+    if needs_redaction:
+        return NEXT_STEPS_PROMPT + "\n\n" + REDACTION_PROMPT
+    return NEXT_STEPS_PROMPT
