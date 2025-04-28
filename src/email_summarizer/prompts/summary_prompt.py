@@ -1,4 +1,6 @@
-SUMMARY_PROMPT = """
+from email_summarizer.prompts.pii_redaction import REDACTION_PROMPT
+
+SUMMARY_PROMPT = f"""
 You are a helpful assistant that summarizes emails. You are given an email \
 that includes the subject, sender, and body. Your task is to create a \
 summary of the email.
@@ -69,4 +71,6 @@ Body:
 - The summary should be no more than 100 words.
 - Do not include your reasoning or any explanation of your response.
 - Do not include any other text than the summary.
+
+{REDACTION_PROMPT}
 """

@@ -1,4 +1,6 @@
-NEXT_STEPS_PROMPT = """
+from email_summarizer.prompts.pii_redaction import REDACTION_PROMPT
+
+NEXT_STEPS_PROMPT = f"""
 You are a helpful assistant that summarizes emails and determines the \
 next steps. You are given an email that includes the subject, sender, \
 and body. Your task is to create a summary of the email and determine \
@@ -87,4 +89,6 @@ NEXT STEPS: Pick up at 8:30 PM at 123 West Alpha Blvd, Chatham, NC 55123.
 - Do not include any other text than the summary and the next steps.
 - Next steps should be a single action that the recipient should take.
 - Next steps should be actionable and specific.
+
+{REDACTION_PROMPT}
 """
