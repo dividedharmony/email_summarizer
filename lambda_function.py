@@ -1,10 +1,18 @@
 import asyncio
 import json
+import logging
+import os
 
 from email_summarizer.app import run_bot
 from email_summarizer.models.enums import EmailAccounts
 
 ACCOUNT_PARAM_KEY = "email_account_type"
+
+LOG = logging.getLogger()
+log_level_name = os.environ.get("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(
+    level=log_level_name, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s"
+)
 
 
 class MalformedEventError(Exception):
@@ -19,14 +27,14 @@ def lambda_handler(event, _context):
     :param context: Runtime information.
     :return: Response object (structure depends on the trigger, often a dict).
     """
-    print("Received event: " + json.dumps(event, indent=2))
+    LOG.info("Received event: %s", json.dumps(event, indent=2))
     status_good = True
     error_message = ""
     try:
         email_account = _parse_email_account_from_event(event)
         asyncio.run(run_bot(email_account))
     except Exception as e:
-        print(f"Error: {e}")
+        LOG.error("Error: %s", e)
         status_good = False
         error_message = str(e)
 
