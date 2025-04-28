@@ -3,7 +3,7 @@ import discord
 from email_summarizer.models.enums import EmailAccounts
 from email_summarizer.models.report import EmailReport
 from email_summarizer.utils.ai_utils import compile_email_report
-from email_summarizer.utils.email_utils import EmailUnavailableError, get_emails
+from email_summarizer.utils.gmail_utils import EmailUnavailableError, get_emails
 from email_summarizer.utils.grouping_utils import group_emails
 
 
