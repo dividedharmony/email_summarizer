@@ -48,7 +48,7 @@ async def put_email_report(
                 email_account=email_account,
                 emails=grouping_payload.get("ungrouped_emails", []),
                 grouped_emails=grouping_payload.get("list_of_grouped_emails", []),
-                important_emails=grouping_payload.get("high_priority_emails", []),
+                high_priority_emails=grouping_payload.get("high_priority_emails", []),
             )
 
             # Send report to channel
@@ -57,9 +57,9 @@ async def put_email_report(
                 await channel.send("*No emails to report.*")
             else:
                 # Display high priority emails
-                for i, high_priority in enumerate(email_report.high_priority_summaries):
+                for i, actionable_email in enumerate(email_report.actionable_emails):
                     await channel.send(
-                        f"{i + 1}. ({high_priority.email.sender}) {high_priority.next_steps}"
+                        f"{i + 1}. ({actionable_email.email.sender}) {actionable_email.next_steps}"
                     )
                 else:
                     await channel.send("*No high priority emails to report.*")
