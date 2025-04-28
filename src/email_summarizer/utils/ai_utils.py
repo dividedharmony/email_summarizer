@@ -49,17 +49,17 @@ def compile_email_report(
 ) -> EmailReport:
     client = BedrockReasoningClient(model_name=AnthropicModels.HAIKU)
     summaries = []
-    high_priority_summaries = []
+    high_priority_emails = []
     for email in emails:
         summary = build_summary(client, email)
         summaries.append(summary)
     for email in important_emails:
         summary = build_summary(client, email)
-        high_priority_summaries.append(summary)
+        high_priority_emails.append(summary)
     return EmailReport(
         email_account=email_account,
         summaries=summaries,
         timestamp=datetime.now(tz=ET_TIMEZONE).strftime("%Y-%m-%d %H:%M"),
         grouped_emails=grouped_emails,
-        high_priority_summaries=high_priority_summaries,
+        high_priority_emails=high_priority_emails,
     )
