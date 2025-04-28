@@ -10,8 +10,8 @@ from email_summarizer.utils.ai_utils import summarize_emails
 from email_summarizer.utils.email_utils import (
     EmailUnavailableError,
     get_emails,
-    group_en_masse_emails,
 )
+from email_summarizer.utils.grouping_utils import group_emails
 
 if __name__ == "__main__":
     load_dotenv()
@@ -64,7 +64,7 @@ async def on_ready():
 
         try:
             emails = get_emails(email_account, max_results=MAX_EMAILS)
-            grouping_payload = group_en_masse_emails(emails)
+            grouping_payload = group_emails(emails)
             email_report = summarize_emails(
                 email_account=email_account,
                 emails=grouping_payload.get("ungrouped_emails", []),
