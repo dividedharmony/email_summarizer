@@ -17,8 +17,8 @@ class GroupingCategory(BaseModel):
 
 
 def _build_grouping_categories() -> list[GroupingCategory]:
-    spouse_regex = re.compile(os.getenv("SPOUSE_REGEX"))
-    daycare_regex = re.compile(os.getenv("DAYCARE_REGEX"))
+    spouse_regex = re.compile(os.getenv("SPOUSE_REGEX"), re.IGNORECASE)
+    daycare_regex = re.compile(os.getenv("DAYCARE_REGEX"), re.IGNORECASE)
     return [
         GroupingCategory(
             regex=re.compile(r"warhorn"),
