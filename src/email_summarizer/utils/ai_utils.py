@@ -12,13 +12,14 @@ from email_summarizer.services.anthropic_client import (
     AnthropicModels,
     BedrockReasoningClient,
 )
+from email_summarizer.utils.email_utils import email_to_prompt
 
 ET_TIMEZONE = ZoneInfo("America/New_York")
 
 
 def build_summary(client: BedrockReasoningClient, email: Email) -> Summary:
     response = client.invoke_model(
-        prompt=email.to_prompt(), system_prompt=SUMMARY_PROMPT
+        prompt=email_to_prompt(email), system_prompt=SUMMARY_PROMPT
     )
     return Summary(body=response.response, email=email)
 
@@ -27,7 +28,7 @@ def build_actionable_email(
     client: BedrockReasoningClient, email: Email
 ) -> ActionableEmail:
     response = client.invoke_model(
-        prompt=email.to_prompt(), system_prompt=NEXT_STEPS_PROMPT
+        prompt=email_to_prompt(email), system_prompt=NEXT_STEPS_PROMPT
     )
     return ActionableEmail(next_steps=response.response, email=email)
 

@@ -1,5 +1,6 @@
 from email_summarizer.models.email import Email
 from email_summarizer.prompts.pii_redaction import REDACTION_PROMPT
+from email_summarizer.utils.email_utils import email_to_prompt
 
 example_email = Email(
     sender="Mellow Mushroom",
@@ -63,7 +64,7 @@ brackets.
 
 
 # Example Input
-{example_email.to_prompt()}
+{email_to_prompt(example_email)}
 
 # Example Output
 [TRANSACTION] Mellow Mushroom Order Received. Half & Half Pizza ready for pickup at 8:46 PM on 12/31/2024.

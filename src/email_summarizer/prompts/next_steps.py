@@ -1,5 +1,6 @@
 from email_summarizer.models.email import Email
 from email_summarizer.prompts.pii_redaction import REDACTION_PROMPT
+from email_summarizer.utils.email_utils import email_to_prompt
 
 example_email = Email(
     sender="Jane Doe",
@@ -78,7 +79,7 @@ suggest other next steps that are more appropriate for the given email.
 
 
 # Example Input
-{example_email.to_prompt()}
+{email_to_prompt(example_email)}
 
 # Example Output
 Jane Doe forwarded an email from KFC. KFC received your order. \
