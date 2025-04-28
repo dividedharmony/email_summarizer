@@ -14,7 +14,7 @@ fi
 AWS_REGION="us-east-1"
 IMAGE_NAME="alphonse"
 ECR_REPO_NAME="alphonse_v1"
-IMAGE_TAG="v0.4.0"
+IMAGE_TAG="v0.4.1"
 FUNCTION_NAME="alphonse_email_summarizer"
 
 # Construct ECR image URI
