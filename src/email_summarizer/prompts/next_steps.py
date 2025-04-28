@@ -1,4 +1,51 @@
+from email_summarizer.models.email import Email
 from email_summarizer.prompts.pii_redaction import REDACTION_PROMPT
+
+example_email = Email(
+    sender="Jane Doe",
+    subject="Fwd: We've received your KFC order",
+    body="""
+ORDER# 286529018
+
+THANKS FOR YOUR ORDER
+
+8:30 pm
+
+We've received your order.
+
+Quick Pick-up at KFC Chatham
+123 West Alpha Blvd , Chatham, NC 55123
+
+Meal for Two: 5 pc. Chicken Combo
+5 pc. Chicken
+2 Biscuits
+Mashed Potatoes
+Sweet Corn
+Pepsi Zero Sugar
+Pepsi Zero Sugar
+$15.00
+
+1
+
+Honey Mustard
+$0.20
+
+1
+
+Honey Sauce
+FREE
+
+1
+
+Ketchup
+FREE
+
+Subtotal	$15.20
+Tax	$1.25
+Tips
+Total	$16.45
+""",
+)
 
 NEXT_STEPS_PROMPT = f"""
 You are a helpful assistant that summarizes emails and determines the \
@@ -31,50 +78,7 @@ suggest other next steps that are more appropriate for the given email.
 
 
 # Example Input
-Sender: Jane Doe
-Subject: Fwd: We've received your KFC order
-Body:
-    <body>
-        ORDER# 286529018
-
-        THANKS FOR YOUR ORDER
-
-        8:30 pm
-
-        We've received your order.
-
-        Quick Pick-up at KFC Chatham
-        123 West Alpha Blvd , Chatham, NC 55123
-
-        Meal for Two: 5 pc. Chicken Combo
-        5 pc. Chicken
-        2 Biscuits
-        Mashed Potatoes
-        Sweet Corn
-        Pepsi Zero Sugar
-        Pepsi Zero Sugar
-        $15.00
-
-        1
-
-        Honey Mustard
-        $0.20
-
-        1
-
-        Honey Sauce
-        FREE
-
-        1
-
-        Ketchup
-        FREE
-
-        Subtotal	$15.20
-        Tax	$1.25
-        Tips
-        Total	$16.45
-    </body>
+{example_email.to_prompt()}
 
 # Example Output
 Jane Doe forwarded an email from KFC. KFC received your order. \
