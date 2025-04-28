@@ -60,7 +60,7 @@ async def put_email_report(
             if email_report.is_empty():
                 await channel.send("*No emails to report.*")
             else:
-                LOG.info("Displaying actionable emails...")
+                LOG.debug("Displaying actionable emails...")
                 if len(email_report.actionable_emails) > 0:
                     for i, actionable_email in enumerate(
                         email_report.actionable_emails
@@ -71,7 +71,7 @@ async def put_email_report(
                 else:
                     await channel.send("*No high priority emails to report.*")
 
-                LOG.info("Displaying regular emails...")
+                LOG.debug("Displaying regular emails...")
                 if len(email_report.summaries) > 0:
                     for i, summary in enumerate(email_report.summaries):
                         await channel.send(
@@ -80,7 +80,7 @@ async def put_email_report(
                 else:
                     await channel.send("*No regular emails to report.*")
 
-                LOG.info("Displaying grouped emails...")
+                LOG.debug("Displaying grouped emails...")
                 if _any_grouped_emails(email_report):
                     await channel.send("### Grouped Emails")
                     for grouped_email in email_report.grouped_emails:

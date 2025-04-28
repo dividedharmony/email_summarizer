@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -14,6 +15,7 @@ from email_summarizer.services.anthropic_client import (
 )
 from email_summarizer.utils.email_utils import email_to_prompt
 
+LOG = logging.getLogger()
 ET_TIMEZONE = ZoneInfo("America/New_York")
 
 
@@ -43,14 +45,19 @@ def compile_email_report(
     grouped_emails: list[GroupedEmails],
     high_priority_emails: list[Email],
 ) -> EmailReport:
+    LOG.info("Compiling email report...")
+
+    LOG.debug("Using model: %s", AnthropicModels.HAIKU)
     client = BedrockReasoningClient(model_name=AnthropicModels.HAIKU)
     summaries: list[Summary] = []
     actionable_emails: list[ActionableEmail] = []
+
+    LOG.debug("Building summaries of regular emails...")
     for email in emails:
         summary = build_summary(client, email)
         summaries.append(summary)
 
-    # Turn high priority emails into actionable emails
+    LOG.debug("Building actionable emails from high priority emails...")
     for email in high_priority_emails:
         actionable_email = build_actionable_email(client, email)
         actionable_emails.append(actionable_email)
