@@ -1,3 +1,5 @@
+import logging
+
 import discord
 
 from email_summarizer.models.enums import EmailAccounts
@@ -5,6 +7,8 @@ from email_summarizer.models.report import EmailReport
 from email_summarizer.utils.ai_utils import compile_email_report
 from email_summarizer.utils.gmail_utils import EmailUnavailableError, get_emails
 from email_summarizer.utils.grouping_utils import group_emails
+
+LOG = logging.getLogger()
 
 
 def _report_header(email_report: EmailReport) -> str:
@@ -26,8 +30,8 @@ async def put_email_report(
     assert max_emails is not None
     assert email_account is not None
 
-    print(f"Logged in as {client.user.name} ({client.user.id})")
-    print("------")
+    LOG.info("Logged in as %s (%s)", client.user.name, client.user.id)
+    LOG.info("------")
 
     channel_id = int(channel_str)
 
@@ -38,7 +42,7 @@ async def put_email_report(
         if not channel:
             raise ValueError(f"Could not find channel with ID: {channel_id}")
 
-        print(f"Found channel: {channel.name} ({channel.id})")
+        LOG.info("Found channel: %s (%s)", channel.name, channel.id)
 
         try:
             # Get emails and compile report
@@ -56,7 +60,7 @@ async def put_email_report(
             if email_report.is_empty():
                 await channel.send("*No emails to report.*")
             else:
-                # Display high priority emails
+                LOG.info("Displaying actionable emails...")
                 if len(email_report.actionable_emails) > 0:
                     for i, actionable_email in enumerate(
                         email_report.actionable_emails
@@ -67,7 +71,7 @@ async def put_email_report(
                 else:
                     await channel.send("*No high priority emails to report.*")
 
-                # Display regular emails
+                LOG.info("Displaying regular emails...")
                 if len(email_report.summaries) > 0:
                     for i, summary in enumerate(email_report.summaries):
                         await channel.send(
@@ -76,7 +80,7 @@ async def put_email_report(
                 else:
                     await channel.send("*No regular emails to report.*")
 
-                # Display grouped emails
+                LOG.info("Displaying grouped emails...")
                 if _any_grouped_emails(email_report):
                     await channel.send("### Grouped Emails")
                     for grouped_email in email_report.grouped_emails:
@@ -85,22 +89,23 @@ async def put_email_report(
                         )
                 else:
                     await channel.send("*No grouped emails to report.*")
-            print(f"Message sent to #{channel.name}")
+            LOG.info("Message sent to %s", channel.name)
         except EmailUnavailableError as e:
-            print(f"Error: {e}")
+            LOG.error("Error: %s", e)
             await channel.send("Error: Gmail service not available.")
-            print("Reported error to channel.")
+            LOG.info("Reported error to channel.")
 
     except discord.errors.Forbidden:
-        print(
-            f"Error: Bot doesn't have permissions to send messages in channel ID {channel_id}."
+        LOG.error(
+            "Error: Bot doesn't have permissions to send messages in channel ID %s.",
+            channel_id,
         )
     except Exception as e:
-        print(f"An error occurred: {e}")
+        LOG.error("An error occurred: %s", e)
     finally:
         # After sending the message, close the connection.
         # If you want the bot to stay online for other tasks, remove this line.
-        print("Closing bot connection.")
+        LOG.info("Closing bot connection.")
         await client.close()
 
 
