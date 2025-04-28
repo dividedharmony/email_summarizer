@@ -57,18 +57,22 @@ async def put_email_report(
                 await channel.send("*No emails to report.*")
             else:
                 # Display high priority emails
-                for i, actionable_email in enumerate(email_report.actionable_emails):
-                    await channel.send(
-                        f"{i + 1}. ({actionable_email.email.sender}) {actionable_email.next_steps}"
-                    )
+                if len(email_report.actionable_emails) > 0:
+                    for i, actionable_email in enumerate(
+                        email_report.actionable_emails
+                    ):
+                        await channel.send(
+                            f"{i + 1}. ({actionable_email.email.sender}) {actionable_email.next_steps}"
+                        )
                 else:
                     await channel.send("*No high priority emails to report.*")
 
                 # Display regular emails
-                for i, summary in enumerate(email_report.summaries):
-                    await channel.send(
-                        f"{i + 1}. ({summary.email.sender}) {summary.body}"
-                    )
+                if len(email_report.summaries) > 0:
+                    for i, summary in enumerate(email_report.summaries):
+                        await channel.send(
+                            f"{i + 1}. ({summary.email.sender}) {summary.body}"
+                        )
                 else:
                     await channel.send("*No regular emails to report.*")
 
