@@ -3,9 +3,12 @@ from email_summarizer.prompts.pii_redaction import REDACTION_PROMPT
 from email_summarizer.utils.email_utils import email_to_prompt
 
 example_email = Email(
-    sender="Mellow Mushroom",
+    id="1234567890",
+    sender="Mellow Mushroom (mellowmushroom@example.com)",
     subject="Mellow Mushroom Order Received",
-    body="""
+    date="12/31/2024",
+    snippet="",
+    body_preview="""
 Order # 32146084855578624
 (Note: You do not need this number to pickup)
 
