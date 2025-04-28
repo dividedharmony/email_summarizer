@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
+from email_summarizer.models.actionable_email import ActionableEmail
 from email_summarizer.models.email import GroupedEmails
 from email_summarizer.models.enums import EmailAccounts
-from email_summarizer.models.high_priority import HighPriorityEmail
 from email_summarizer.models.summary import Summary
 
 
@@ -11,11 +11,11 @@ class EmailReport(BaseModel):
     summaries: list[Summary]
     timestamp: str
     grouped_emails: list[GroupedEmails]
-    high_priority_emails: list[HighPriorityEmail]
+    actionable_emails: list[ActionableEmail]
 
     def is_empty(self) -> bool:
         return (
             len(self.summaries) == 0
             and len(self.grouped_emails) == 0
-            and len(self.high_priority_emails) == 0
+            and len(self.actionable_emails) == 0
         )

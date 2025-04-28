@@ -1,9 +1,9 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from email_summarizer.models.actionable_email import ActionableEmail
 from email_summarizer.models.email import Email, GroupedEmails
 from email_summarizer.models.enums import EmailAccounts
-from email_summarizer.models.high_priority import HighPriorityEmail
 from email_summarizer.models.report import EmailReport
 from email_summarizer.models.summary import Summary
 from email_summarizer.prompts.next_steps import NEXT_STEPS_PROMPT
@@ -33,33 +33,35 @@ def build_summary(client: BedrockReasoningClient, email: Email) -> Summary:
     return Summary(body=response.response, email=email)
 
 
-def build_high_priority_summary(
+def build_actionable_email(
     client: BedrockReasoningClient, email: Email
-) -> HighPriorityEmail:
+) -> ActionableEmail:
     prompt = email_to_prompt(email)
     response = client.invoke_model(prompt=prompt, system_prompt=NEXT_STEPS_PROMPT)
-    return HighPriorityEmail(next_steps=response.response, email=email)
+    return ActionableEmail(next_steps=response.response, email=email)
 
 
 def compile_email_report(
     email_account: EmailAccounts,
     emails: list[Email],
     grouped_emails: list[GroupedEmails],
-    important_emails: list[Email],
+    high_priority_emails: list[Email],
 ) -> EmailReport:
     client = BedrockReasoningClient(model_name=AnthropicModels.HAIKU)
-    summaries = []
-    high_priority_emails = []
+    summaries: list[Summary] = []
+    actionable_emails: list[ActionableEmail] = []
     for email in emails:
         summary = build_summary(client, email)
         summaries.append(summary)
-    for email in important_emails:
-        summary = build_summary(client, email)
-        high_priority_emails.append(summary)
+
+    # Turn high priority emails into actionable emails
+    for email in high_priority_emails:
+        actionable_email = build_actionable_email(client, email)
+        actionable_emails.append(actionable_email)
     return EmailReport(
         email_account=email_account,
         summaries=summaries,
         timestamp=datetime.now(tz=ET_TIMEZONE).strftime("%Y-%m-%d %H:%M"),
         grouped_emails=grouped_emails,
-        high_priority_emails=high_priority_emails,
+        actionable_emails=actionable_emails,
     )
