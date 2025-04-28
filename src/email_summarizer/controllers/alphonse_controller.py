@@ -2,7 +2,7 @@ import discord
 
 from email_summarizer.models.enums import EmailAccounts
 from email_summarizer.models.report import EmailReport
-from email_summarizer.utils.ai_utils import summarize_emails
+from email_summarizer.utils.ai_utils import compile_email_report
 from email_summarizer.utils.email_utils import EmailUnavailableError, get_emails
 from email_summarizer.utils.grouping_utils import group_emails
 
@@ -44,10 +44,11 @@ async def put_email_report(
             # Get emails and compile report
             emails = get_emails(email_account, max_results=max_emails)
             grouping_payload = group_emails(emails)
-            email_report = summarize_emails(
+            email_report = compile_email_report(
                 email_account=email_account,
                 emails=grouping_payload.get("ungrouped_emails", []),
                 grouped_emails=grouping_payload.get("list_of_grouped_emails", []),
+                important_emails=grouping_payload.get("high_priority_emails", []),
             )
 
             # Send report to channel

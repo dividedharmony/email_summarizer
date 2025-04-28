@@ -41,7 +41,7 @@ def build_high_priority_summary(
     return HighPriorityEmail(next_steps=response.response, email=email)
 
 
-def summarize_emails(
+def compile_email_report(
     email_account: EmailAccounts,
     emails: list[Email],
     grouped_emails: list[GroupedEmails],
