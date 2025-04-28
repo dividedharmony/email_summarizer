@@ -15,8 +15,8 @@ class Email(BaseModel):
 
     def to_prompt(self) -> str:
         return f"""
-        Sender: {self.sender}
-        Subject: {self.subject} - {self.snippet}
+        Sender: <sender>{self.sender}</sender>
+        Subject: <subject>{self.subject} - {self.snippet}</subject>
         Body:
         <body>
             {self.body_preview}
