@@ -1,8 +1,6 @@
 import unittest
-
-from email_summarizer.utils.redaction_utils import redact_pii
-
 from ..base import BaseTestCase
+from email_summarizer.utils.redaction_utils import redact_pii
 
 
 class TestRedactionUtils(BaseTestCase):

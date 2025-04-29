@@ -24,3 +24,4 @@ repos:
     hooks:
       - id: isort
         name: Sort Imports
+        exclude: tests/.*
