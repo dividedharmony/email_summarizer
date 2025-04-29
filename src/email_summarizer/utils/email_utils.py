@@ -14,7 +14,7 @@ def email_to_prompt(
 ) -> EmailPromptPayload:
     body = email.body_preview
     was_redacted = False
-    if not disable_redaction:
+    if isinstance(body, str) and not disable_redaction:
         payload = redact_pii(body)
         was_redacted = payload["was_redacted"]
         body = payload["final_body"]

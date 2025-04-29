@@ -13,6 +13,8 @@ def redact_pii(email_body: str) -> str:
     """
     Redact PII from the email body.
     """
+    assert isinstance(email_body, str), "email_body must be a string"
+
     was_redacted = False
     running_body = email_body
     for redaction in ALL_REDACTIONS:
