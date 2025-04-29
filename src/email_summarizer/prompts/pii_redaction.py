@@ -37,7 +37,7 @@ ALL_REDACTIONS: list[RedactionInfo] = [
     ),
     RedactionInfo(
         name="Phone Number",
-        regex_str=r"(?\d{3})?-?\d{3}-?\d{4}\b",
+        regex_str=r"(\(\d{3}\)|\d{3})?-?\d{3}-?\d{4}\b",
         redaction="<PHONE_NUMBER>",
     ),
 ]
