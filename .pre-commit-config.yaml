@@ -7,7 +7,7 @@ repos:
       - id: end-of-file-fixer
         exclude: .*\.json$|.*\.md$
       - id: name-tests-test
-        exclude: tests/base.py
+        exclude: tests/base.py$|tests/test_utils.py$
   - repo: https://github.com/psf/black
     rev: 25.1.0
     hooks:

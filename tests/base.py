@@ -22,3 +22,7 @@ load_test_environment()
 
 class BaseTestCase(unittest.TestCase):
     pass
+
+
+class BaseAsyncTestCase(unittest.IsolatedAsyncioTestCase):
+    pass
