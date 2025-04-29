@@ -27,13 +27,16 @@ class TestRedactionUtils(BaseTestCase):
             "Phone without dashes: 1234567890",
             "Phone with parentheses: (123) 456-7890",
             "Phone with parentheses and no space: (123)456-7890",
-            "Multiple phones: 123-456-7890, (123) 456-7890, and 098-765-4321",
+            "Phone with spaces: 123 456 7890",
+            "Phone with mixed separators: 123 456-7890",
+            "Multiple phones: 123-456-7890, (123) 456-7890, 123 456 7890, and 098-765-4321",
         ]
         for text in test_cases:
             result = redact_pii(text)
             self.assertTrue(result["was_redacted"])
             self.assertNotIn("123-456-7890", result["final_body"])
             self.assertNotIn("(123) 456-7890", result["final_body"])
+            self.assertNotIn("123 456 7890", result["final_body"])
             self.assertNotIn("098-765-4321", result["final_body"])
             self.assertIn("<PHONE_NUMBER>", result["final_body"])
 
