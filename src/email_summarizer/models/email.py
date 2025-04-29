@@ -10,8 +10,7 @@ class Email(BaseModel):
     body_preview: str | None
 
     def __str__(self) -> str:
-        return f"Email(id={self.id}, subject={self.subject}, \
-            sender={self.sender}, date={self.date}, snippet={self.snippet})"
+        return f"Email(id={self.id}, subject={self.subject}, sender={self.sender}, date={self.date}, snippet={self.snippet})"
 
 
 class GroupedEmails(BaseModel):

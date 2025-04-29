@@ -2,12 +2,16 @@ import base64
 import unittest
 from unittest.mock import MagicMock, patch
 
-from email_summarizer.services.gmail import (Email, build_email_from_message,
-                                             decode_body, extract_headers,
-                                             format_message_info,
-                                             list_and_read_emails,
-                                             load_credentials_from_file,
-                                             refresh_credentials)
+from email_summarizer.services.gmail import (
+    Email,
+    build_email_from_message,
+    decode_body,
+    extract_headers,
+    format_message_info,
+    list_emails,
+    load_credentials_from_file,
+    refresh_credentials,
+)
 
 
 class TestEmail(unittest.TestCase):
@@ -36,8 +40,7 @@ class TestEmail(unittest.TestCase):
             snippet="Test snippet",
             body_preview=None,
         )
-        expected_str = "Email(id=123, subject=Test Subject, sender=test@example.com, \
-            date=2024-04-19, snippet=Test snippet)"
+        expected_str = "Email(id=123, subject=Test Subject, sender=test@example.com, date=2024-04-19, snippet=Test snippet)"
         self.assertEqual(str(email), expected_str)
 
 
@@ -157,7 +160,7 @@ class TestGmailService(unittest.TestCase):
                 "body": {"data": base64.urlsafe_b64encode(b"Test body").decode()},
             },
         }
-        list_and_read_emails(mock_service, max_results=1)
+        list_emails(mock_service, max_results=1)
         mock_list_messages.assert_called_once_with(mock_service, 1)
         mock_get_details.assert_called_once_with(mock_service, "123")
 
