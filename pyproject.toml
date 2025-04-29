@@ -30,6 +30,7 @@ isort = "^6.0.1"
 types-boto3 = "^1.0.1"
 mypy = "^1.15.0"
 tox = "^4.25.0"
+poethepoet = "^0.34.0"
 
 
 [tool.poetry.group.test.dependencies]
