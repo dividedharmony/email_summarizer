@@ -4,7 +4,7 @@ from email_summarizer.utils.redaction_utils import redact_pii
 
 
 class TestRedactionUtils(BaseTestCase):
-    # Note: LICENSE_PLATE_REGEX is set in the .env.test file
+    # Note: LICENSE_PLATE_REGEX and ADDRESS_REGEX are set in the .env.test file
 
     def test_redact_ssn(self):
         """Test redaction of Social Security Numbers."""
@@ -53,18 +53,33 @@ class TestRedactionUtils(BaseTestCase):
             self.assertNotIn("ABC-2468", result["final_body"])
             self.assertIn("<LICENSE_PLATE>", result["final_body"])
 
+    def test_redact_street_address(self):
+        """Test redaction of street addresses."""
+        test_cases = [
+            "Address: 123 W Billium St, Anytown, USA",
+            "Multiple addresses: 123 W Billium St and 123 W Billium Street",
+        ]
+        for text in test_cases:
+            result = redact_pii(text)
+            self.assertTrue(result["was_redacted"])
+            self.assertNotIn("123 W Billium St", result["final_body"])
+            self.assertNotIn("123 W Billium Street", result["final_body"])
+            self.assertIn("<ADDRESS>", result["final_body"])
+
     def test_multiple_pii_types(self):
         """Test redaction of multiple types of PII in one text."""
-        text = "Contact: Phone 123-456-7890, SSN 123-45-6789, License ABC2468"
+        text = "Contact: Phone 123-456-7890, SSN 123-45-6789, License ABC2468, Address 123 W Billium St"
         result = redact_pii(text)
 
         self.assertTrue(result["was_redacted"])
         self.assertNotIn("123-456-7890", result["final_body"])
         self.assertNotIn("123-45-6789", result["final_body"])
         self.assertNotIn("ABC2468", result["final_body"])
+        self.assertNotIn("123 W Billium St", result["final_body"])
         self.assertIn("<PHONE_NUMBER>", result["final_body"])
         self.assertIn("<SSN>", result["final_body"])
         self.assertIn("<LICENSE_PLATE>", result["final_body"])
+        self.assertIn("<ADDRESS>", result["final_body"])
 
     def test_no_pii(self):
         """Test text without any PII."""

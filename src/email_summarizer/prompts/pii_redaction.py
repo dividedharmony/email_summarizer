@@ -12,6 +12,7 @@ def _get_env_var(key: str) -> str:
 
 
 LICENSE_PLATE_REGEX = _get_env_var("LICENSE_PLATE_REGEX")
+STREET_ADDRESS_REGEX = _get_env_var("STREET_ADDRESS_REGEX")
 
 
 class RedactionInfo(BaseModel):
@@ -39,6 +40,11 @@ ALL_REDACTIONS: list[RedactionInfo] = [
         name="Phone Number",
         regex_str=r"(\(\d{3}\)|\d{3})?[- ]?\d{3}[- ]?\d{4}\b",
         redaction="<PHONE_NUMBER>",
+    ),
+    RedactionInfo(
+        name="Street Address",
+        regex_str=STREET_ADDRESS_REGEX,
+        redaction="<ADDRESS>",
     ),
 ]
 
