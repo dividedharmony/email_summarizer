@@ -1,7 +1,10 @@
 import re
 from typing import TypedDict
 
-from email_summarizer.prompts.pii_redaction import ALL_REDACTIONS
+from email_summarizer.prompts.pii_redaction import (
+    ALL_REDACTIONS,
+    combined_redactions_regex,
+)
 
 
 class RedactionPayload(TypedDict):
@@ -17,9 +20,11 @@ def redact_pii(email_body: str) -> str:
 
     was_redacted = False
     running_body = email_body
-    for redaction in ALL_REDACTIONS:
-        regex = redaction["regex"]
-        running_body, num_subs = re.subn(regex, redaction["redaction"], running_body)
-        if num_subs > 0:
-            was_redacted = True
+    combined_regex = combined_redactions_regex()
+    if re.search(combined_regex, running_body):
+        for redaction in ALL_REDACTIONS:
+            regex = redaction.regex
+            running_body, num_subs = re.subn(regex, redaction.redaction, running_body)
+            if num_subs > 0:
+                was_redacted = True
     return RedactionPayload(was_redacted=was_redacted, final_body=running_body)
