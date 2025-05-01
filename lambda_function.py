@@ -38,8 +38,7 @@ def lambda_handler(event, _context):
         asyncio.run(run_bot(email_account, model))
     except Exception as e:
         LOG.error("Error: %s", e)
-        status_good = False
-        error_message = str(e)
+        raise e
 
     response_message = (
         "Email summarizer ran successfully" if status_good else error_message
