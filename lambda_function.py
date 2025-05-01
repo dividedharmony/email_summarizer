@@ -41,7 +41,7 @@ def lambda_handler(event, _context):
         body = _parse_body_from_event(event)
         email_account = _parse_value_from_body(body, ACCOUNT_PARAM_KEY)
         # model = _parse_value_from_body(body, MODEL_PARAM_KEY)
-        model = SupportedModel.CLAUDE_HAIKU
+        model = SupportedModel.NOVA_MICRO
         asyncio.run(run_bot(email_account, model))
     except Exception as e:
         LOG.error("Error: %s", e)
