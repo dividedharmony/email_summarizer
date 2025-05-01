@@ -21,20 +21,25 @@ class BaseModelClient:
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-    def invoke(self, prompt: str):
+    def invoke(self, prompt: str, system_prompt: str | None = None):
         # Request body
-        body = json.dumps(self._build_request_body(prompt=prompt))
+        body = json.dumps(
+            self._build_request_body(prompt=prompt, system_prompt=system_prompt)
+        )
         # Send request
         response = self.bedrock_client.invoke_model(modelId=self.model_id, body=body)
         # Read response
         return json.loads(response["body"].read())
 
-    def _build_request_body(self, prompt: str) -> dict:
+    def _build_request_body(self, prompt: str, system_prompt: str | None) -> dict:
         """
         Build the request body for the model.
         """
-        return {
+        request_body = {
             "prompt": prompt,
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
         }
+        if system_prompt:
+            request_body["system_prompt"] = system_prompt
+        return request_body
