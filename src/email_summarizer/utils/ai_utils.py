@@ -10,18 +10,19 @@ from email_summarizer.models.summary import Summary
 from email_summarizer.prompts.next_steps import next_steps_system_prompt
 from email_summarizer.prompts.summary_prompt import summary_system_prompt
 from email_summarizer.services.anthropic_client import (
+    AnthropicClient,
     AnthropicModels,
-    BedrockReasoningClient,
 )
+from email_summarizer.services.base_model_client import AbstractModelClient
 from email_summarizer.utils.email_utils import email_to_prompt
 
 LOG = logging.getLogger()
 ET_TIMEZONE = ZoneInfo("America/New_York")
 
 
-def build_summary(client: BedrockReasoningClient, email: Email) -> Summary:
+def build_summary(client: AbstractModelClient, email: Email) -> Summary:
     prompt_payload = email_to_prompt(email)
-    response = client.invoke_model(
+    response = client.invoke(
         prompt=prompt_payload["prompt_body"],
         system_prompt=summary_system_prompt(prompt_payload["was_redacted"]),
     )
@@ -29,10 +30,10 @@ def build_summary(client: BedrockReasoningClient, email: Email) -> Summary:
 
 
 def build_actionable_email(
-    client: BedrockReasoningClient, email: Email
+    client: AbstractModelClient, email: Email
 ) -> ActionableEmail:
     prompt_payload = email_to_prompt(email)
-    response = client.invoke_model(
+    response = client.invoke(
         prompt=prompt_payload["prompt_body"],
         system_prompt=next_steps_system_prompt(prompt_payload["was_redacted"]),
     )
@@ -40,7 +41,7 @@ def build_actionable_email(
 
 
 def compile_email_report(
-    client: BedrockReasoningClient,
+    client: AbstractModelClient,
     email_account: EmailAccounts,
     emails: list[Email],
     grouped_emails: list[GroupedEmails],
@@ -69,11 +70,11 @@ def compile_email_report(
     )
 
 
-def get_model_client(target_model: SupportedModel) -> BedrockReasoningClient:
+def get_model_client(target_model: SupportedModel) -> AbstractModelClient:
     LOG.debug("Using model: %s", target_model)
     if target_model == SupportedModel.CLAUDE_HAIKU:
-        return BedrockReasoningClient(model_name=AnthropicModels.HAIKU)
+        return AnthropicClient(model_name=AnthropicModels.HAIKU)
     elif target_model == SupportedModel.CLAUDE_SONNET:
-        return BedrockReasoningClient(model_name=AnthropicModels.SONNET)
+        return AnthropicClient(model_name=AnthropicModels.SONNET)
     else:
         raise ValueError(f"Unsupported model: {target_model}")

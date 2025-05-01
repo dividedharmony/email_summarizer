@@ -1,9 +1,17 @@
 import json
+from abc import abstractmethod
+from typing import Any
 
 from email_summarizer.services.bedrock_client import BedrockClient
 
 
-class BaseModelClient:
+class AbstractModelClient:
+    @abstractmethod
+    def invoke(self, prompt: str, system_prompt: str | None = None) -> Any:
+        pass
+
+
+class BaseModelClient(AbstractModelClient):
     bedrock_client: BedrockClient
     model_id: str
     temperature: float

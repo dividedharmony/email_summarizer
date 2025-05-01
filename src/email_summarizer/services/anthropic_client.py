@@ -8,6 +8,8 @@ from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
+from email_summarizer.services.base_model_client import AbstractModelClient
+
 load_dotenv()
 
 
@@ -39,7 +41,7 @@ class ModelResponse(BaseModel):
     response: Optional[str]
 
 
-class BedrockReasoningClient:
+class AnthropicClient(AbstractModelClient):
     """
     Client for interacting with Claude's reasoning capabilities via Amazon Bedrock.
 
@@ -55,7 +57,7 @@ class BedrockReasoningClient:
         default_model_id: str | None = None,
     ):
         """
-        Initialize the BedrockReasoningClient.
+        Initialize the AnthropicClient.
 
         Args:
             region_name: AWS region for the Bedrock client
@@ -93,6 +95,13 @@ class BedrockReasoningClient:
         except Exception as e:
             self.logger.error(f"Failed to create Bedrock client: {e}")
             raise
+
+    def invoke(self, prompt: str, system_prompt: str | None = None) -> Any:
+        return self.invoke_model(
+            prompt=prompt,
+            model_id=self.default_model_id,
+            system_prompt=system_prompt,
+        )
 
     def invoke_model(
         self,
@@ -224,8 +233,8 @@ def main() -> None:
         White has just moved pawn from e2 to e4. Find the best move for Black and explain your reasoning step by step.
         """
 
-        logger.info("Initializing BedrockReasoningClient")
-        client = BedrockReasoningClient(model_name=AnthropicModels.SONNET)
+        logger.info("Initializing AnthropicClient")
+        client = AnthropicClient(model_name=AnthropicModels.SONNET)
 
         # Print info about the model we're using
         model_info = client.get_model_info()

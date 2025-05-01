@@ -13,7 +13,7 @@ from email_summarizer.utils.ai_utils import (
     get_model_client,
 )
 from email_summarizer.services.anthropic_client import (
-    BedrockReasoningClient,
+    AnthropicClient,
     AnthropicModels,
 )
 
@@ -30,7 +30,7 @@ class TestAiUtils(BaseTestCase):
             body_preview="This is the body of the test email.",
         )
 
-        self.mock_client = MagicMock(spec=BedrockReasoningClient)
+        self.mock_client = MagicMock(spec=AnthropicClient)
         self.mock_response = MagicMock()
         self.mock_response.response = "This is a test summary"
         self.mock_client.invoke_model.return_value = self.mock_response
@@ -134,12 +134,12 @@ class TestAiUtils(BaseTestCase):
         """Test getting the appropriate model client"""
         # Test Haiku model
         haiku_client = get_model_client(SupportedModel.CLAUDE_HAIKU)
-        self.assertIsInstance(haiku_client, BedrockReasoningClient)
+        self.assertIsInstance(haiku_client, AnthropicClient)
         self.assertEqual(haiku_client.default_model, AnthropicModels.HAIKU)
 
         # Test Sonnet model
         sonnet_client = get_model_client(SupportedModel.CLAUDE_SONNET)
-        self.assertIsInstance(sonnet_client, BedrockReasoningClient)
+        self.assertIsInstance(sonnet_client, AnthropicClient)
         self.assertEqual(sonnet_client.default_model, AnthropicModels.SONNET)
 
         # Test unsupported model
