@@ -14,6 +14,8 @@ from email_summarizer.services.anthropic_client import (
     AnthropicModels,
 )
 from email_summarizer.services.base_model_client import AbstractModelClient
+from email_summarizer.services.bedrock_client import BedrockClientFactory
+from email_summarizer.services.nova_client import NovaClientFactory
 from email_summarizer.utils.email_utils import email_to_prompt
 
 LOG = logging.getLogger()
@@ -76,5 +78,8 @@ def get_model_client(target_model: SupportedModel) -> AbstractModelClient:
         return AnthropicClient(model_name=AnthropicModels.HAIKU)
     elif target_model == SupportedModel.CLAUDE_SONNET:
         return AnthropicClient(model_name=AnthropicModels.SONNET)
+    elif target_model == SupportedModel.NOVA_MICRO:
+        bedrock_client = BedrockClientFactory().get_client()
+        return NovaClientFactory().get_client(bedrock_client=bedrock_client)
     else:
         raise ValueError(f"Unsupported model: {target_model}")

@@ -16,6 +16,8 @@ from email_summarizer.services.anthropic_client import (
     AnthropicClient,
     AnthropicModels,
 )
+from email_summarizer.services.nova_client import NovaClient
+from email_summarizer.services.bedrock_client import BedrockClient
 
 
 class TestAiUtils(BaseTestCase):
@@ -33,7 +35,7 @@ class TestAiUtils(BaseTestCase):
         self.mock_client = MagicMock(spec=AnthropicClient)
         self.mock_response = MagicMock()
         self.mock_response.response = "This is a test summary"
-        self.mock_client.invoke_model.return_value = self.mock_response
+        self.mock_client.invoke.return_value = self.mock_response
 
     def test_build_summary(self):
         """Test building a summary from an email"""
@@ -53,8 +55,8 @@ class TestAiUtils(BaseTestCase):
             self.assertEqual(summary.email, self.test_email)
 
             # Verify the client was called correctly
-            self.mock_client.invoke_model.assert_called_once()
-            call_args = self.mock_client.invoke_model.call_args[1]
+            self.mock_client.invoke.assert_called_once()
+            call_args = self.mock_client.invoke.call_args[1]
             self.assertEqual(call_args["prompt"], "Test prompt body")
             self.assertIn("system_prompt", call_args)
 
@@ -76,8 +78,8 @@ class TestAiUtils(BaseTestCase):
             self.assertEqual(actionable_email.email, self.test_email)
 
             # Verify the client was called correctly
-            self.mock_client.invoke_model.assert_called_once()
-            call_args = self.mock_client.invoke_model.call_args[1]
+            self.mock_client.invoke.assert_called_once()
+            call_args = self.mock_client.invoke.call_args[1]
             self.assertEqual(call_args["prompt"], "Test prompt body")
             self.assertIn("system_prompt", call_args)
 
@@ -113,7 +115,7 @@ class TestAiUtils(BaseTestCase):
         self.assertEqual(report.actionable_emails[0].email, self.test_email)
 
         # Verify the client was called for both summaries and actionable emails
-        self.assertEqual(self.mock_client.invoke_model.call_count, 2)
+        self.assertEqual(self.mock_client.invoke.call_count, 2)
 
     def test_compile_email_report_empty(self):
         """Test compiling an email report with empty lists"""
@@ -141,6 +143,27 @@ class TestAiUtils(BaseTestCase):
         sonnet_client = get_model_client(SupportedModel.CLAUDE_SONNET)
         self.assertIsInstance(sonnet_client, AnthropicClient)
         self.assertEqual(sonnet_client.default_model, AnthropicModels.SONNET)
+
+        # Test Nova Micro model
+        with (
+            patch(
+                "email_summarizer.services.bedrock_client.BedrockClientFactory.get_client"
+            ) as mock_bedrock_factory,
+            patch(
+                "email_summarizer.services.nova_client.NovaClientFactory.get_client"
+            ) as mock_nova_factory,
+        ):
+            mock_bedrock_client = MagicMock(spec=BedrockClient)
+            mock_nova_client = MagicMock(spec=NovaClient)
+            mock_bedrock_factory.return_value = mock_bedrock_client
+            mock_nova_factory.return_value = mock_nova_client
+
+            nova_client = get_model_client(SupportedModel.NOVA_MICRO)
+            self.assertIsInstance(nova_client, NovaClient)
+            mock_bedrock_factory.assert_called_once()
+            mock_nova_factory.assert_called_once_with(
+                bedrock_client=mock_bedrock_client
+            )
 
         # Test unsupported model
         with self.assertRaises(ValueError) as context:
