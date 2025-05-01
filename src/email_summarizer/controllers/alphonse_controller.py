@@ -2,9 +2,9 @@ import logging
 
 import discord
 
-from email_summarizer.models.enums import EmailAccounts
+from email_summarizer.models.enums import EmailAccounts, SupportedModel
 from email_summarizer.models.report import EmailReport
-from email_summarizer.utils.ai_utils import compile_email_report
+from email_summarizer.utils.ai_utils import compile_email_report, get_model_client
 from email_summarizer.utils.gmail_utils import EmailUnavailableError, get_emails
 from email_summarizer.utils.grouping_utils import group_emails
 
@@ -16,8 +16,9 @@ def _report_header(email_report: EmailReport) -> str:
 
 
 async def put_email_report(
-    client: discord.Client,
+    discord_client: discord.Client,
     email_account: EmailAccounts,
+    target_model: SupportedModel,
     channel_str: str,
     max_emails: int,
 ) -> None:
@@ -25,19 +26,19 @@ async def put_email_report(
     Get emails from gmail, compile them into a report, and send the report to the channel.
     """
     # Guard statements
-    assert client.user is not None
+    assert discord_client.user is not None
     assert channel_str is not None
     assert max_emails is not None
     assert email_account is not None
 
-    LOG.info("Logged in as %s (%s)", client.user.name, client.user.id)
+    LOG.info("Logged in as %s (%s)", discord_client.user.name, discord_client.user.id)
     LOG.info("------")
 
     channel_id = int(channel_str)
 
     try:
         # Get the channel object using the ID
-        channel = client.get_channel(channel_id)
+        channel = discord_client.get_channel(channel_id)
 
         if not channel:
             raise ValueError(f"Could not find channel with ID: {channel_id}")
@@ -48,7 +49,9 @@ async def put_email_report(
             # Get emails and compile report
             emails = get_emails(email_account, max_results=max_emails)
             grouping_payload = group_emails(emails)
+            bedrock_client = get_model_client(target_model)
             email_report = compile_email_report(
+                client=bedrock_client,
                 email_account=email_account,
                 emails=grouping_payload.get("ungrouped_emails", []),
                 grouped_emails=grouping_payload.get("list_of_grouped_emails", []),
@@ -106,7 +109,7 @@ async def put_email_report(
         # After sending the message, close the connection.
         # If you want the bot to stay online for other tasks, remove this line.
         LOG.info("Closing bot connection.")
-        await client.close()
+        await discord_client.close()
 
 
 def _any_grouped_emails(email_report: EmailReport) -> bool:

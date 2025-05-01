@@ -2,7 +2,7 @@ from unittest.mock import patch, MagicMock
 
 from ..base import BaseTestCase
 from email_summarizer.models.email import Email, GroupedEmails
-from email_summarizer.models.enums import EmailAccounts
+from email_summarizer.models.enums import EmailAccounts, SupportedModel
 from email_summarizer.models.summary import Summary
 from email_summarizer.models.actionable_email import ActionableEmail
 from email_summarizer.models.report import EmailReport
@@ -10,8 +10,12 @@ from email_summarizer.utils.ai_utils import (
     build_summary,
     build_actionable_email,
     compile_email_report,
+    get_model_client,
 )
-from email_summarizer.services.anthropic_client import BedrockReasoningClient
+from email_summarizer.services.anthropic_client import (
+    BedrockReasoningClient,
+    AnthropicModels,
+)
 
 
 class TestAiUtils(BaseTestCase):
@@ -84,39 +88,38 @@ class TestAiUtils(BaseTestCase):
         grouped_emails = [GroupedEmails(sender="test@example.com", count=1)]
         high_priority_emails = [self.test_email]
 
-        with patch(
-            "email_summarizer.utils.ai_utils.BedrockReasoningClient"
-        ) as mock_client_class:
-            mock_client = MagicMock(spec=BedrockReasoningClient)
-            mock_client_class.return_value = mock_client
-            mock_client.invoke_model.return_value = self.mock_response
+        report = compile_email_report(
+            self.mock_client,
+            EmailAccounts.PRIMARY,
+            emails,
+            grouped_emails,
+            high_priority_emails,
+        )
 
-            report = compile_email_report(
-                EmailAccounts.PRIMARY, emails, grouped_emails, high_priority_emails
-            )
+        # Verify the report was created correctly
+        self.assertIsInstance(report, EmailReport)
+        self.assertEqual(report.email_account, EmailAccounts.PRIMARY)
+        self.assertEqual(len(report.summaries), 1)
+        self.assertEqual(len(report.actionable_emails), 1)
+        self.assertEqual(len(report.grouped_emails), 1)
+        self.assertIsInstance(report.timestamp, str)
 
-            # Verify the report was created correctly
-            self.assertIsInstance(report, EmailReport)
-            self.assertEqual(report.email_account, EmailAccounts.PRIMARY)
-            self.assertEqual(len(report.summaries), 1)
-            self.assertEqual(len(report.actionable_emails), 1)
-            self.assertEqual(len(report.grouped_emails), 1)
-            self.assertIsInstance(report.timestamp, str)
+        # Verify summaries were created
+        self.assertIsInstance(report.summaries[0], Summary)
+        self.assertEqual(report.summaries[0].email, self.test_email)
 
-            # Verify summaries were created
-            self.assertIsInstance(report.summaries[0], Summary)
-            self.assertEqual(report.summaries[0].email, self.test_email)
+        # Verify actionable emails were created
+        self.assertIsInstance(report.actionable_emails[0], ActionableEmail)
+        self.assertEqual(report.actionable_emails[0].email, self.test_email)
 
-            # Verify actionable emails were created
-            self.assertIsInstance(report.actionable_emails[0], ActionableEmail)
-            self.assertEqual(report.actionable_emails[0].email, self.test_email)
-
-            # Verify the client was called for both summaries and actionable emails
-            self.assertEqual(mock_client.invoke_model.call_count, 2)
+        # Verify the client was called for both summaries and actionable emails
+        self.assertEqual(self.mock_client.invoke_model.call_count, 2)
 
     def test_compile_email_report_empty(self):
         """Test compiling an email report with empty lists"""
-        report = compile_email_report(EmailAccounts.PRIMARY, [], [], [])
+        report = compile_email_report(
+            self.mock_client, EmailAccounts.PRIMARY, [], [], []
+        )
 
         # Verify the report was created correctly with empty lists
         self.assertIsInstance(report, EmailReport)
@@ -126,3 +129,20 @@ class TestAiUtils(BaseTestCase):
         self.assertEqual(len(report.grouped_emails), 0)
         self.assertIsInstance(report.timestamp, str)
         self.assertTrue(report.is_empty())
+
+    def test_get_model_client(self):
+        """Test getting the appropriate model client"""
+        # Test Haiku model
+        haiku_client = get_model_client(SupportedModel.CLAUDE_HAIKU)
+        self.assertIsInstance(haiku_client, BedrockReasoningClient)
+        self.assertEqual(haiku_client.default_model, AnthropicModels.HAIKU)
+
+        # Test Sonnet model
+        sonnet_client = get_model_client(SupportedModel.CLAUDE_SONNET)
+        self.assertIsInstance(sonnet_client, BedrockReasoningClient)
+        self.assertEqual(sonnet_client.default_model, AnthropicModels.SONNET)
+
+        # Test unsupported model
+        with self.assertRaises(ValueError) as context:
+            get_model_client("unsupported_model")
+        self.assertIn("Unsupported model", str(context.exception))

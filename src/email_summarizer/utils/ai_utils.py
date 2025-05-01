@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 
 from email_summarizer.models.actionable_email import ActionableEmail
 from email_summarizer.models.email import Email, GroupedEmails
-from email_summarizer.models.enums import EmailAccounts
+from email_summarizer.models.enums import EmailAccounts, SupportedModel
 from email_summarizer.models.report import EmailReport
 from email_summarizer.models.summary import Summary
 from email_summarizer.prompts.next_steps import next_steps_system_prompt
@@ -40,6 +40,7 @@ def build_actionable_email(
 
 
 def compile_email_report(
+    client: BedrockReasoningClient,
     email_account: EmailAccounts,
     emails: list[Email],
     grouped_emails: list[GroupedEmails],
@@ -47,8 +48,6 @@ def compile_email_report(
 ) -> EmailReport:
     LOG.info("Compiling email report...")
 
-    LOG.debug("Using model: %s", AnthropicModels.HAIKU)
-    client = BedrockReasoningClient(model_name=AnthropicModels.HAIKU)
     summaries: list[Summary] = []
     actionable_emails: list[ActionableEmail] = []
 
@@ -68,3 +67,13 @@ def compile_email_report(
         grouped_emails=grouped_emails,
         actionable_emails=actionable_emails,
     )
+
+
+def get_model_client(target_model: SupportedModel) -> BedrockReasoningClient:
+    LOG.debug("Using model: %s", target_model)
+    if target_model == SupportedModel.CLAUDE_HAIKU:
+        return BedrockReasoningClient(model_name=AnthropicModels.HAIKU)
+    elif target_model == SupportedModel.CLAUDE_SONNET:
+        return BedrockReasoningClient(model_name=AnthropicModels.SONNET)
+    else:
+        raise ValueError(f"Unsupported model: {target_model}")

@@ -6,7 +6,7 @@ import discord
 from dotenv import load_dotenv
 
 from email_summarizer.controllers.alphonse_controller import put_email_report
-from email_summarizer.models.enums import EmailAccounts
+from email_summarizer.models.enums import EmailAccounts, SupportedModel
 
 LOG = logging.getLogger()
 
@@ -37,15 +37,20 @@ async def on_ready():
     """
     LOG.info("Discord bot ready")
     email_account = client.target_email_account
-    await put_email_report(client, email_account, CHANNEL_ID_STR, MAX_EMAILS)
+    target_model = client.target_model
+    await put_email_report(
+        client, email_account, target_model, CHANNEL_ID_STR, MAX_EMAILS
+    )
 
 
-async def run_bot(email_account_type: str):
+async def run_bot(email_account_type: str, model_str: str):
     """Handles login and potential errors"""
     email_account = EmailAccounts(email_account_type)
+    target_model = SupportedModel(model_str)
     try:
         LOG.info("Starting Discord bot...")
         client.target_email_account = email_account
+        client.target_model = target_model
         await client.start(BOT_TOKEN)
     except discord.errors.LoginFailure:
         LOG.error(

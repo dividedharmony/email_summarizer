@@ -7,7 +7,7 @@ from email_summarizer.controllers.alphonse_controller import (
     _any_grouped_emails,
     put_email_report,
 )
-from email_summarizer.models.enums import EmailAccounts
+from email_summarizer.models.enums import EmailAccounts, SupportedModel
 from email_summarizer.models.report import EmailReport
 from email_summarizer.models.email import GroupedEmails
 from email_summarizer.models.summary import Summary
@@ -101,15 +101,17 @@ class TestAlphonseController(BaseAsyncTestCase):
         email_account = EmailAccounts.PRIMARY
         channel_str = "987654321"
         max_emails = 3
+        target_model = SupportedModel.CLAUDE_HAIKU
 
         mock_client.get_channel.return_value = None
 
         # WHEN
         await put_email_report(
-            client=mock_client,
+            discord_client=mock_client,
             email_account=email_account,
             channel_str=channel_str,
             max_emails=max_emails,
+            target_model=target_model,
         )
 
         # THEN
@@ -131,6 +133,7 @@ class TestAlphonseController(BaseAsyncTestCase):
         email_account = EmailAccounts.PRIMARY
         channel_str = "987654321"
         max_emails = 3
+        target_model = SupportedModel.CLAUDE_HAIKU
 
         mock_channel = Mock()
         mock_client.get_channel.return_value = mock_channel
@@ -154,10 +157,11 @@ class TestAlphonseController(BaseAsyncTestCase):
 
         # WHEN
         await put_email_report(
-            client=mock_client,
+            discord_client=mock_client,
             email_account=email_account,
             channel_str=channel_str,
             max_emails=max_emails,
+            target_model=target_model,
         )
 
         # THEN
@@ -185,6 +189,7 @@ class TestAlphonseController(BaseAsyncTestCase):
         email_account = EmailAccounts.PRIMARY
         channel_str = "987654321"
         max_emails = 3
+        target_model = SupportedModel.CLAUDE_HAIKU
 
         mock_channel = Mock()
         mock_client.get_channel.return_value = mock_channel
@@ -197,10 +202,11 @@ class TestAlphonseController(BaseAsyncTestCase):
 
         # WHEN
         await put_email_report(
-            client=mock_client,
+            discord_client=mock_client,
             email_account=email_account,
             channel_str=channel_str,
             max_emails=max_emails,
+            target_model=target_model,
         )
 
         # THEN
@@ -224,6 +230,7 @@ class TestAlphonseController(BaseAsyncTestCase):
         email_account = EmailAccounts.PRIMARY
         channel_str = "987654321"
         max_emails = 3
+        target_model = SupportedModel.CLAUDE_HAIKU
 
         # Simulate discord.errors.Forbidden
         mock_client.get_channel.side_effect = discord.errors.Forbidden(
@@ -232,10 +239,11 @@ class TestAlphonseController(BaseAsyncTestCase):
 
         # WHEN
         await put_email_report(
-            client=mock_client,
+            discord_client=mock_client,
             email_account=email_account,
             channel_str=channel_str,
             max_emails=max_emails,
+            target_model=target_model,
         )
 
         # THEN
@@ -257,6 +265,7 @@ class TestAlphonseController(BaseAsyncTestCase):
         email_account = EmailAccounts.PRIMARY
         channel_str = "987654321"
         max_emails = 3
+        target_model = SupportedModel.CLAUDE_HAIKU
 
         mock_channel = Mock()
         mock_client.get_channel.return_value = mock_channel
@@ -267,10 +276,11 @@ class TestAlphonseController(BaseAsyncTestCase):
 
         # WHEN
         await put_email_report(
-            client=mock_client,
+            discord_client=mock_client,
             email_account=email_account,
             channel_str=channel_str,
             max_emails=max_emails,
+            target_model=target_model,
         )
 
         # THEN
@@ -291,6 +301,7 @@ class TestAlphonseController(BaseAsyncTestCase):
         email_account = EmailAccounts.PRIMARY
         channel_str = "987654321"
         max_emails = 3
+        target_model = SupportedModel.CLAUDE_HAIKU
 
         mock_channel = Mock()
         mock_client.get_channel.return_value = mock_channel
@@ -309,10 +320,11 @@ class TestAlphonseController(BaseAsyncTestCase):
 
         # WHEN
         await put_email_report(
-            client=mock_client,
+            discord_client=mock_client,
             email_account=email_account,
             channel_str=channel_str,
             max_emails=max_emails,
+            target_model=target_model,
         )
 
         # THEN
@@ -338,6 +350,7 @@ class TestAlphonseController(BaseAsyncTestCase):
         email_account = EmailAccounts.PRIMARY
         channel_str = "987654321"
         max_emails = 3
+        target_model = SupportedModel.CLAUDE_HAIKU
 
         mock_channel = Mock()
         mock_client.get_channel.return_value = mock_channel
@@ -367,10 +380,11 @@ class TestAlphonseController(BaseAsyncTestCase):
 
         # WHEN
         await put_email_report(
-            client=mock_client,
+            discord_client=mock_client,
             email_account=email_account,
             channel_str=channel_str,
             max_emails=max_emails,
+            target_model=target_model,
         )
 
         # THEN
@@ -398,6 +412,7 @@ class TestAlphonseController(BaseAsyncTestCase):
         email_account = EmailAccounts.PRIMARY
         channel_str = "987654321"
         max_emails = 3
+        target_model = SupportedModel.CLAUDE_HAIKU
 
         mock_channel = Mock()
         mock_client.get_channel.return_value = mock_channel
@@ -419,10 +434,11 @@ class TestAlphonseController(BaseAsyncTestCase):
 
         # WHEN
         await put_email_report(
-            client=mock_client,
+            discord_client=mock_client,
             email_account=email_account,
             channel_str=channel_str,
             max_emails=max_emails,
+            target_model=target_model,
         )
 
         # THEN

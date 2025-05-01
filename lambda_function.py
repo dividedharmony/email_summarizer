@@ -7,6 +7,7 @@ from email_summarizer.app import run_bot
 from email_summarizer.models.enums import EmailAccounts
 
 ACCOUNT_PARAM_KEY = "email_account_type"
+MODEL_PARAM_KEY = "model"
 
 LOG = logging.getLogger()
 log_level_name = os.environ.get("LOG_LEVEL", "INFO").upper()
@@ -33,7 +34,8 @@ def lambda_handler(event, _context):
     try:
         body = _parse_body_from_event(event)
         email_account = _parse_value_from_body(body, ACCOUNT_PARAM_KEY)
-        asyncio.run(run_bot(email_account))
+        model = _parse_value_from_body(body, MODEL_PARAM_KEY)
+        asyncio.run(run_bot(email_account, model))
     except Exception as e:
         LOG.error("Error: %s", e)
         status_good = False
