@@ -31,7 +31,8 @@ def lambda_handler(event, _context):
     status_good = True
     error_message = ""
     try:
-        email_account = _parse_email_account_from_event(event)
+        body = _parse_body_from_event(event)
+        email_account = _parse_value_from_body(body, ACCOUNT_PARAM_KEY)
         asyncio.run(run_bot(email_account))
     except Exception as e:
         LOG.error("Error: %s", e)
@@ -53,25 +54,26 @@ def lambda_handler(event, _context):
     return response
 
 
-def _parse_email_account_from_event(event: dict) -> EmailAccounts:
+def _parse_body_from_event(event: dict) -> dict:
     if "body" not in event:
         raise MalformedEventError("Event body is missing")
-    raw_email_account = None
     if isinstance(event.get("body"), str):
         try:
-            parsed_body = json.loads(event["body"])
-            raw_email_account = parsed_body.get(ACCOUNT_PARAM_KEY)
-
+            return json.loads(event["body"])
         except json.JSONDecodeError as json_error:
             raise MalformedEventError(
                 f"Event body is not a valid JSON string: {str(json_error)}"
             )
     elif isinstance(event.get("body"), dict):
-        raw_email_account = event["body"].get(ACCOUNT_PARAM_KEY)
+        return event["body"]
+    else:
+        raise MalformedEventError("Event body is not a valid JSON string")
 
-    if raw_email_account is None:
-        raise MalformedEventError(
-            "Event body cannot be parsed as a valid email account"
-        )
 
-    return EmailAccounts(raw_email_account)
+def _parse_value_from_body(body: dict, key: str) -> EmailAccounts:
+    raw_value = body.get(key)
+
+    if raw_value is None:
+        raise MalformedEventError(f"Event body.{key} cannot be parsed as a valid value")
+
+    return raw_value
