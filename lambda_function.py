@@ -5,7 +5,7 @@ import os
 import sys
 
 from email_summarizer.app import run_bot
-from email_summarizer.models.enums import EmailAccounts
+from email_summarizer.models.enums import EmailAccounts, SupportedModel
 
 ACCOUNT_PARAM_KEY = "email_account_type"
 MODEL_PARAM_KEY = "model"
@@ -40,7 +40,8 @@ def lambda_handler(event, _context):
     try:
         body = _parse_body_from_event(event)
         email_account = _parse_value_from_body(body, ACCOUNT_PARAM_KEY)
-        model = _parse_value_from_body(body, MODEL_PARAM_KEY)
+        # model = _parse_value_from_body(body, MODEL_PARAM_KEY)
+        model = SupportedModel.CLAUDE_HAIKU
         asyncio.run(run_bot(email_account, model))
     except Exception as e:
         LOG.error("Error: %s", e)
