@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import sys
 
 from email_summarizer.app import run_bot
 from email_summarizer.models.enums import EmailAccounts
@@ -14,6 +15,11 @@ log_level_name = os.environ.get("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
     level=log_level_name, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s"
 )
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+LOG.addHandler(handler)
 
 
 class MalformedEventError(Exception):
