@@ -71,6 +71,7 @@ async def put_email_report(
                         await channel.send(
                             f"{i + 1}. ({actionable_email.email.sender}) {actionable_email.next_steps}"
                         )
+                    await channel.send("--------")
                 else:
                     await channel.send("*No high priority emails to report.*")
 
