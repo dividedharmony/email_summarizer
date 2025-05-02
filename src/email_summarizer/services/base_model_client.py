@@ -1,14 +1,30 @@
 import json
 from abc import abstractmethod
-from typing import Any
+
+from pydantic import BaseModel
 
 from email_summarizer.services.bedrock_client import BedrockClient
 
 
+class AbastractModelResponse(BaseModel):
+    @abstractmethod
+    def get_response(self) -> str:
+        pass
+
+
 class AbstractModelClient:
     @abstractmethod
-    def invoke(self, prompt: str, system_prompt: str | None = None) -> Any:
+    def invoke(
+        self, prompt: str, system_prompt: str | None = None
+    ) -> AbastractModelResponse:
         pass
+
+
+class BaseModelResponse(AbastractModelResponse):
+    response: str
+
+    def get_response(self) -> str:
+        return self.response
 
 
 class BaseModelClient(AbstractModelClient):
@@ -29,7 +45,9 @@ class BaseModelClient(AbstractModelClient):
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-    def invoke(self, prompt: str, system_prompt: str | None = None):
+    def invoke(
+        self, prompt: str, system_prompt: str | None = None
+    ) -> AbastractModelResponse:
         # Request body
         body = json.dumps(
             self._build_request_body(prompt=prompt, system_prompt=system_prompt)
@@ -37,7 +55,7 @@ class BaseModelClient(AbstractModelClient):
         # Send request
         response = self.bedrock_client.invoke_model(modelId=self.model_id, body=body)
         # Read response
-        return json.loads(response["body"].read())
+        return BaseModelResponse(response=json.loads(response["body"].read()))
 
     def _build_request_body(self, prompt: str, system_prompt: str | None) -> dict:
         """

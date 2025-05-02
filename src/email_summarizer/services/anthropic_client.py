@@ -6,9 +6,11 @@ from typing import Any, Dict, Optional
 import boto3
 from botocore.exceptions import ClientError
 from dotenv import load_dotenv
-from pydantic import BaseModel
 
-from email_summarizer.services.base_model_client import AbstractModelClient
+from email_summarizer.services.base_model_client import (
+    AbastractModelResponse,
+    AbstractModelClient,
+)
 
 load_dotenv()
 
@@ -36,9 +38,12 @@ class AnthropicModels(Enum):
         raise ValueError(f"Invalid model name: {model_name}")
 
 
-class ModelResponse(BaseModel):
+class AnthropicModelResponse(AbastractModelResponse):
     reasoning: Optional[str]
     response: Optional[str]
+
+    def get_response(self) -> str:
+        return self.response
 
 
 class AnthropicClient(AbstractModelClient):
@@ -96,7 +101,9 @@ class AnthropicClient(AbstractModelClient):
             self.logger.error(f"Failed to create Bedrock client: {e}")
             raise
 
-    def invoke(self, prompt: str, system_prompt: str | None = None) -> Any:
+    def invoke(
+        self, prompt: str, system_prompt: str | None = None
+    ) -> AbastractModelResponse:
         return self.invoke_model(
             prompt=prompt,
             model_id=self.default_model_id,
@@ -110,7 +117,7 @@ class AnthropicClient(AbstractModelClient):
         temperature: float = 1,
         system_prompt: Optional[str] = None,
         additional_model_request_fields: Optional[Dict[str, Any]] = None,
-    ) -> ModelResponse:
+    ) -> AnthropicModelResponse:
         """
         Invoke Claude with reasoning capability enabled.
 
@@ -170,7 +177,9 @@ class AnthropicClient(AbstractModelClient):
                 if "text" in block:
                     response_text = block["text"]
 
-            return ModelResponse(reasoning=reasoning_text, response=response_text)
+            return AnthropicModelResponse(
+                reasoning=reasoning_text, response=response_text
+            )
 
         except ClientError as e:
             self.logger.error(f"Bedrock API error: {e}")
@@ -184,7 +193,7 @@ class AnthropicClient(AbstractModelClient):
 
     def invoke_reasoning(
         self, prompt: str, reasoning_budget: int = 2000
-    ) -> ModelResponse:
+    ) -> AnthropicModelResponse:
         reasoning_config = {
             "thinking": {"type": "enabled", "budget_tokens": reasoning_budget}
         }
