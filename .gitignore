@@ -60,3 +60,6 @@ reports/
 # Google Secrets
 client_secret.json
 token.json
+
+# E2E results
+e2e/output.txt
