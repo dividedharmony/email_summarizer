@@ -5,7 +5,6 @@ import os
 import sys
 
 from email_summarizer.app import run_bot
-from email_summarizer.models.enums import EmailAccounts, SupportedModel
 
 ACCOUNT_PARAM_KEY = "email_account_type"
 MODEL_PARAM_KEY = "model"
@@ -40,8 +39,7 @@ def lambda_handler(event, _context):
     try:
         body = _parse_body_from_event(event)
         email_account = _parse_value_from_body(body, ACCOUNT_PARAM_KEY)
-        # model = _parse_value_from_body(body, MODEL_PARAM_KEY)
-        model = SupportedModel.NOVA_MICRO
+        model = _parse_value_from_body(body, MODEL_PARAM_KEY)
         asyncio.run(run_bot(email_account, model))
     except Exception as e:
         LOG.error("Error: %s", e)
@@ -78,10 +76,12 @@ def _parse_body_from_event(event: dict) -> dict:
         raise MalformedEventError("Event body is not a valid JSON string")
 
 
-def _parse_value_from_body(body: dict, key: str) -> EmailAccounts:
+def _parse_value_from_body(body: dict, key: str) -> str:
     raw_value = body.get(key)
 
-    if raw_value is None:
-        raise MalformedEventError(f"Event body.{key} cannot be parsed as a valid value")
+    if not isinstance(raw_value, str):
+        raise MalformedEventError(
+            f"Event body.{key} cannot be parsed as a valid string value"
+        )
 
     return raw_value
