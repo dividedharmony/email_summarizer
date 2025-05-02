@@ -55,6 +55,9 @@ class BaseModelClient(AbstractModelClient):
         # Send request
         response = self.bedrock_client.invoke_model(modelId=self.model_id, body=body)
         # Read response
+        return self._parse_response(response)
+
+    def _parse_response(self, response: dict) -> AbastractModelResponse:
         return BaseModelResponse(response=json.loads(response["body"].read()))
 
     def _build_request_body(self, prompt: str, system_prompt: str | None) -> dict:

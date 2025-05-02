@@ -1,8 +1,14 @@
+import json
 import os
 import typing
 
-from email_summarizer.services.base_model_client import BaseModelClient
+from email_summarizer.services.base_model_client import (
+    AbastractModelResponse,
+    BaseModelClient,
+    BaseModelResponse,
+)
 from email_summarizer.services.bedrock_client import BedrockClient
+from email_summarizer.utils.general_utils import safe_dig
 
 
 class NovaClient(BaseModelClient):
@@ -29,6 +35,22 @@ class NovaClient(BaseModelClient):
             "system": system_list,
             "inferenceConfig": inf_params,
         }
+
+    @typing.override
+    def _parse_response(self, response: dict) -> AbastractModelResponse:
+        response_body = json.loads(response["body"].read())
+        contents = (
+            safe_dig(
+                data=response_body,
+                keys=["output", "message", "content"],
+                error_on_missing=True,
+            )
+            or []
+        )
+        if len(contents) == 0:
+            raise ValueError("Empty content found in Nova response")
+        text_content = contents[0]["text"]
+        return BaseModelResponse(response=text_content)
 
 
 class NovaClientFactory:
