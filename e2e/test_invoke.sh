@@ -4,11 +4,22 @@ FunctionName="alphonse_email_summarizer"
 OutputFile="e2e/output.txt"
 Region="us-east-1"
 
+# --- Get Event File from Argument ---
+if [ -z "$1" -o -z "$2" ]; then
+  echo "Usage: $0 [account_type] [model]"
+  echo "  account_type: primary, alt, or noreply"
+  echo "  model: nova or haiku"
+  exit 1
+fi
+
+ACCOUNT_TYPE_ARG="$1"
+MODEL_ARG="$2"
+
 # --- Determine Paths ---
 # Get the absolute directory where the script resides, handling symlinks etc.
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-EVENT_FILE="${SCRIPT_DIR}/payload/primary_nova.json"
+EVENT_FILE="${SCRIPT_DIR}/payload/${ACCOUNT_TYPE_ARG}_${MODEL_ARG}.json"
 
 # --- Validate ---
 if [ ! -f "$EVENT_FILE" ]; then
