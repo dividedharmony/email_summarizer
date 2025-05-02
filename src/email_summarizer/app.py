@@ -63,4 +63,5 @@ async def run_bot(email_account_type: str, model_str: str):
 # Run the bot
 if __name__ == "__main__":
     email_account_type = EmailAccounts.PRIMARY.value
-    asyncio.run(run_bot(email_account_type))
+    model_str = SupportedModel.NOVA_MICRO.value
+    asyncio.run(run_bot(email_account_type, model_str))
