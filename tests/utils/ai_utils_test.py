@@ -18,6 +18,7 @@ from email_summarizer.services.anthropic_client import (
 )
 from email_summarizer.services.nova_client import NovaClient
 from email_summarizer.services.bedrock_client import BedrockClient
+from email_summarizer.services.base_model_client import BaseModelResponse
 
 
 class TestAiUtils(BaseTestCase):
@@ -33,8 +34,7 @@ class TestAiUtils(BaseTestCase):
         )
 
         self.mock_client = MagicMock(spec=AnthropicClient)
-        self.mock_response = MagicMock()
-        self.mock_response.response = "This is a test summary"
+        self.mock_response = BaseModelResponse(response="This is a test summary")
         self.mock_client.invoke.return_value = self.mock_response
 
     def test_build_summary(self):
