@@ -7,7 +7,7 @@ SCOPE="https://www.googleapis.com/auth/gmail.readonly"
 # The Redirect URI you configured in Google Cloud Console
 REDIRECT_URI="https://developers.google.com/oauthplayground"
 # Google's OAuth 2.0 endpoints
-AUTHORIZATION_URL="https://accounts.google.com/o/oauth2/v2/auth"
+AUTHORIZATION_URL="https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount"
 TOKEN_URL="https://oauth2.googleapis.com/token"
 
 # --- Check for jq ---
@@ -20,25 +20,31 @@ then
 fi
 
 # --- Get Credentials ---
-read -p "Enter your Google Client ID: " CLIENT_ID
-
-if [ -z "$CLIENT_ID" ]; then
-  echo "Error: Client ID cannot be empty."
-  exit 1
+# Check for Client ID from environment variable first, otherwise prompt
+if [ -n "$ALPHONSE_GOOGLE_CLIENT_ID" ]; then
+    CLIENT_ID="$ALPHONSE_GOOGLE_CLIENT_ID"
+    echo "Using Client ID from ALPHONSE_GOOGLE_CLIENT_ID environment variable."
+else
+    read -p "Enter your Google Client ID: " CLIENT_ID
 fi
 
-read -s -p "Enter your Google Client Secret: " CLIENT_SECRET
-echo # Add a newline after secret input
-
-if [ -z "$CLIENT_SECRET" ]; then
-  echo "Error: Client Secret cannot be empty."
-  exit 1
+# Check for Client Secret from environment variable first, otherwise prompt
+if [ -n "$ALPHONSE_GOOGLE_CLIENT_SECRET" ]; then
+    # Check if running in a non-interactive shell or if secrets shouldn't be echoed
+    # Basic check: if stdout is a terminal. More robust checks exist if needed.
+    if [ -t 1 ]; then
+        echo "Using Client Secret from ALPHONSE_GOOGLE_CLIENT_SECRET environment variable."
+    fi
+    CLIENT_SECRET="$ALPHONSE_GOOGLE_CLIENT_SECRET"
+else
+    read -s -p "Enter your Google Client Secret: " CLIENT_SECRET
+    echo # Add a newline after secret input for better formatting
 fi
 
 # --- Step 1: Generate Authorization URL ---
 # URL encode the scope (safer for potentially complex scopes)
-ENCODED_SCOPE=$(jq -sRr @uri <<< "$SCOPE")
-ENCODED_REDIRECT_URI=$(jq -sRr @uri <<< "$REDIRECT_URI")
+ENCODED_SCOPE=$(printf "%s" "$SCOPE" | jq -Rr @uri)
+ENCODED_REDIRECT_URI=$(printf "%s" "$REDIRECT_URI" | jq -Rr @uri)
 
 AUTH_URL_PARAMS="scope=$ENCODED_SCOPE&access_type=offline&include_granted_scopes=true&response_type=code&redirect_uri=$ENCODED_REDIRECT_URI&client_id=$CLIENT_ID&prompt=consent"
 FULL_AUTH_URL="$AUTHORIZATION_URL?$AUTH_URL_PARAMS"
