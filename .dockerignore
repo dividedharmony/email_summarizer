@@ -18,3 +18,4 @@ token.json
 tmp/
 deploy.sh
 e2e/
+scripts/
