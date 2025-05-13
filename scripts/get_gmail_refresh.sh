@@ -5,7 +5,8 @@
 # See: https://developers.google.com/gmail/api/auth/scopes
 SCOPE="https://www.googleapis.com/auth/gmail.readonly"
 # The Redirect URI you configured in Google Cloud Console
-REDIRECT_URI="https://developers.google.com/oauthplayground"
+# Playground: REDIRECT_URI="https://developers.google.com/oauthplayground"
+REDIRECT_URI="https://auth.davidharmon.io/landing.html"
 # Google's OAuth 2.0 endpoints
 AUTHORIZATION_URL="https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount"
 TOKEN_URL="https://oauth2.googleapis.com/token"
