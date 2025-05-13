@@ -9,7 +9,7 @@ from email_summarizer.app import run_bot
 ACCOUNT_PARAM_KEY = "email_account_type"
 MODEL_PARAM_KEY = "model"
 
-LOG = logging.getLogger()
+LOG = logging.getLogger(__name__)
 log_level_name = os.environ.get("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
     level=log_level_name, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s"

@@ -4,6 +4,7 @@ import discord
 
 from email_summarizer.models.enums import EmailAccounts, SupportedModel
 from email_summarizer.models.report import EmailReport
+from email_summarizer.services.gmail import RefreshTokenInvalidError
 from email_summarizer.utils.ai_utils import compile_email_report, get_model_client
 from email_summarizer.utils.gmail_utils import EmailUnavailableError, get_emails
 from email_summarizer.utils.grouping_utils import group_emails
@@ -97,6 +98,12 @@ async def put_email_report(
         except EmailUnavailableError as e:
             LOG.error("Error: %s", e)
             await channel.send("Error: Gmail service not available.")
+            LOG.info("Reported error to channel.")
+        except RefreshTokenInvalidError:
+            LOG.error("Error: Gmail Refresh token is invalid.")
+            await channel.send(
+                f"**Gmail refresh token for {email_account.value} is invalid. Please update the token.**"
+            )
             LOG.info("Reported error to channel.")
 
     except discord.errors.Forbidden:

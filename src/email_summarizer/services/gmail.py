@@ -14,10 +14,16 @@ from googleapiclient.errors import HttpError  # type: ignore
 
 from email_summarizer.models.email import Email
 from email_summarizer.models.enums import EmailAccounts
+from email_summarizer.services.refresh_token import is_refresh_token_valid
 from email_summarizer.utils.gmail_credentials import build_gmail_credentials
 
 if __name__ == "__main__":
     load_dotenv()
+
+
+class RefreshTokenInvalidError(Exception):
+    pass
+
 
 # --- Configuration ---
 # If modifying these scopes, delete the file token.json.
@@ -146,27 +152,11 @@ def authenticate_gmail(email_account: EmailAccounts):
     Returns:
         The Gmail API service or None if authentication fails
     """
-    # # Try to load existing credentials
-    # creds = load_credentials_from_file()
-
-    # # If credentials are invalid or don't exist, handle authentication
-    # if not creds or not creds.valid:
-    #     # Try to refresh expired credentials
-    #     if creds:
-    #         creds = refresh_credentials(creds)
-
-    #     # If refresh failed or credentials don't exist, create new ones
-    #     if not creds:
-    #         creds = locally_create_credentials()
-
-    #     # Save new credentials if we got them
-    #     if creds:
-    #         save_credentials(creds)
-    #     else:
-    #         logger.error("Failed to obtain credentials.")
-    #         return None
 
     creds = build_gmail_credentials(email_account)
+
+    if not is_refresh_token_valid(creds):
+        raise RefreshTokenInvalidError("Refresh token is invalid.")
 
     # Build and return the service
     return build_gmail_service(creds)

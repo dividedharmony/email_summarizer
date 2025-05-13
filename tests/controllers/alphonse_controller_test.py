@@ -13,6 +13,7 @@ from email_summarizer.models.email import GroupedEmails
 from email_summarizer.models.summary import Summary
 from email_summarizer.models.actionable_email import ActionableEmail
 from email_summarizer.utils.gmail_utils import EmailUnavailableError
+from email_summarizer.services.gmail import RefreshTokenInvalidError
 import discord
 
 
@@ -392,6 +393,7 @@ class TestAlphonseController(BaseAsyncTestCase):
             [
                 call("# PRIMARY Email Report 2023-01-01"),
                 call("1. (test@example.com) Action required: Respond to this email"),
+                call("--------"),
                 call("*No regular emails to report.*"),
                 call("*No grouped emails to report.*"),
             ]
@@ -453,3 +455,42 @@ class TestAlphonseController(BaseAsyncTestCase):
             ]
         )
         mock_client.close.assert_awaited_once()
+
+    @patch("email_summarizer.controllers.alphonse_controller.get_emails")
+    @patch("email_summarizer.controllers.alphonse_controller.compile_email_report")
+    async def test_put_email_report_refresh_token_invalid_error(
+        self, mock_compile_email_report, mock_get_emails
+    ):
+        # GIVEN
+        mock_client = Mock()
+        mock_client.user = Mock()
+        mock_client.user.name = "TestBot"
+        mock_client.user.id = "123456789"
+        mock_client.close = AsyncMock()
+        email_account = EmailAccounts.PRIMARY
+        channel_str = "987654321"
+        max_emails = 3
+        target_model = SupportedModel.CLAUDE_HAIKU
+
+        mock_channel = Mock()
+        mock_client.get_channel.return_value = mock_channel
+        mock_channel.send = AsyncMock()
+
+        # Simulate RefreshTokenInvalidError
+        mock_get_emails.side_effect = RefreshTokenInvalidError()
+
+        # WHEN
+        await put_email_report(
+            discord_client=mock_client,
+            email_account=email_account,
+            channel_str=channel_str,
+            max_emails=max_emails,
+            target_model=target_model,
+        )
+
+        # THEN
+        mock_channel.send.assert_awaited_once_with(
+            "**Gmail refresh token for PRIMARY is invalid. Please update the token.**"
+        )
+        mock_client.close.assert_awaited_once()
+        mock_compile_email_report.assert_not_called()
