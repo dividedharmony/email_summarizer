@@ -136,6 +136,25 @@ NOREPLY_PREFIX="NOREPLY"
 GMAIL_ENV_VAR_SUFFIX="GMAIL_REFRESH_TOKEN"
 AWS_REGION="us-east-1"
 
+# Check for Account names
+primary_account_name="Primary"
+
+if [ -n "$ALPHONSE_GMAIL_PRIMARY_ACCOUNT_NAME" ]; then
+    primary_account_name="$ALPHONSE_GMAIL_PRIMARY_ACCOUNT_NAME"
+fi
+
+alternate_account_name="Alternate"
+
+if [ -n "$ALPHONSE_GMAIL_ALTERNATE_ACCOUNT_NAME" ]; then
+    alternate_account_name="$ALPHONSE_GMAIL_ALTERNATE_ACCOUNT_NAME"
+fi
+
+noreply_account_name="Noreply"
+
+if [ -n "$ALPHONSE_GMAIL_NOREPLY_ACCOUNT_NAME" ]; then
+    noreply_account_name="$ALPHONSE_GMAIL_NOREPLY_ACCOUNT_NAME"
+fi
+
 # Check if AWS CLI is installed
 if ! command -v aws &> /dev/null; then
     echo "Error: AWS CLI is not installed." >&2
@@ -146,22 +165,22 @@ fi
 # --- User Prompt ---
 echo "Which account configuration should the Lambda function '$FUNCTION_NAME' use?"
 # -p: prompt string, -n 1: read only one character, -r: raw input (no backslash escapes)
-read -p "(P)rimary, (A)lternate, or (N)oreply? " -n 1 -r user_choice
+read -p "(1) $primary_account_name, (2) $alternate_account_name, or (3) $noreply_account_name? " -n 1 -r user_choice
 echo # Move to a new line after single character input
 
 target_account=""
 
 # Determine the new value based on input (case-insensitive)
 case $user_choice in
-    [Pp])
+    [1])
         target_account="$PRIMARY_PREFIX"
         echo "Selected: Primary ($target_account)"
         ;;
-    [Aa])
+    [2])
         target_account="$ALTERNATE_PREFIX"
         echo "Selected: Alternate ($target_account)"
         ;;
-    [Nn])
+    [3])
         target_account="$NOREPLY_PREFIX"
         echo "Selected: Noreply ($target_account)"
         ;;
